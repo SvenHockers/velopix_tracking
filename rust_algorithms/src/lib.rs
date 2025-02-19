@@ -1,13 +1,12 @@
 use pyo3::prelude::*;
 
-// include custom functions
-pub mod event_model;
+// include custom impl
 mod algorithms;
-
-// remove this once dev is done
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+mod event_model;
+use crate::event_model::event;
+use crate::algorithms::track_following;
+use crate::algorithms::graph_dfs;
+use crate::algorithms::search_by_triplet_trie;
 
 #[pymodule]
 fn velopix_tracking(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -22,7 +21,6 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        println!("Custom velopix tracking")
     }
 }
