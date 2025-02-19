@@ -6,7 +6,7 @@ use crate::event_model::track::Track;
 
 #[pyclass]
 #[derive(Clone)]
-struct TrackFollowing {
+pub struct TrackFollowing {
     max_slopes: (f64, f64),
     max_tolerance: (f64, f64),
     max_scatter: f64,
