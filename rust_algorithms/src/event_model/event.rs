@@ -64,20 +64,14 @@ impl Event {
             for i in start..end {
                 // Create a new Hit instance.
                 let hit_obj = if with_t {
-                    Hit::new(
-                        x[i],
-                        y[i],
-                        z[i],
+                    Hit::new(x[i], y[i], z[i],
                         i as u32,
                         Some(m as i32),
                         Some(t.as_ref().unwrap()[i]),
                         Some(true),
                     )
                 } else {
-                    Hit::new(
-                        x[i],
-                        y[i],
-                        z[i],
+                    Hit::new(x[i], y[i], z[i],
                         i as u32,
                         Some(m as i32),
                         None,
