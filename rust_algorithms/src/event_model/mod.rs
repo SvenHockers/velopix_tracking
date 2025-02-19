@@ -1,4 +1,4 @@
-// this file just exposes the algorthms to outside this directory 
+// this file just exposes files to other modules
 pub mod event;
 pub mod hit;
 pub mod module;

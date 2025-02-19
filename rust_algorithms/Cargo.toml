@@ -1,5 +1,6 @@
 [package]
 name = "rust_algorithms"
+authors = ["Sven Hockers"]
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.18", features = ["extension-module"] }
+ordered-float = "3.6"

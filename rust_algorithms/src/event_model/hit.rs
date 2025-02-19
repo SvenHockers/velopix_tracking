@@ -1,9 +1,9 @@
-use std::fmt::format;
+// use std::fmt::format; this gave an not unused warning unsure wether format is in the standard lib 
 
 use pyo3::prelude::*;
 
 #[pyclass]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Hit {
     #[pyo3(get)]
     pub x: f64,
