@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use crate::event_model::hit::Hit;
 
 #[pyclass]
+#[derive(Clone)]
 pub struct Track {
     #[pyo3(get)]
     pub hits: Vec<Hit>,

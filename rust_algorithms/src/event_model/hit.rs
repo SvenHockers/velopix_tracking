@@ -1,10 +1,11 @@
-// use std::fmt::format; this gave an not unused warning unsure wether format is in the standard lib 
-
 use pyo3::prelude::*;
+use std::hash::{Hash, Hasher};
 
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct Hit {
+    #[pyo3(get)]
+    pub id: u32,
     #[pyo3(get)]
     pub x: f64,
     #[pyo3(get)]
@@ -14,15 +15,15 @@ pub struct Hit {
     #[pyo3(get)]
     pub t: f64,
     #[pyo3(get)]
-    pub id: u32,
-    #[pyo3(get)]
     pub module_number: i32,
     #[pyo3(get)]
-    pub with_t: bool
+    pub with_t: bool,
 }
 
 #[pymethods]
 impl Hit {
+    /// Creates a new Hit instance.
+    /// The `hit_id` is provided as a parameter and will be used for equality and display.
     #[new]
     pub fn new(
         x: f64, 
@@ -34,16 +35,43 @@ impl Hit {
         with_t: Option<bool>
     ) -> Self {
         Hit {
-            x, y, z, t: t.unwrap_or(0.0), id: hit_id, module_number: module.unwrap_or(-1), with_t: with_t.unwrap_or(false)
+            id: hit_id,
+            x,
+            y,
+            z,
+            t: t.unwrap_or(0.0),
+            module_number: module.unwrap_or(-1),
+            with_t: with_t.unwrap_or(false),
         }
     }
 
     pub fn __repr__(&self) -> PyResult<String> {
-        let rep = if self.with_t {
-            format!("#{} module {} {{{}, {}, {}, {}}}", self.id, self.module_number, self.x, self.y, self.z, self.t)
+        if self.with_t {
+            Ok(format!(
+                "#{} module {} {{{}, {}, {}, {}}}",
+                self.id, self.module_number, self.x, self.y, self.z, self.t
+            ))
         } else {
-            format!("#{} module {} {{{}, {}, {}}}", self.id, self.module_number, self.x, self.y, self.z)
-        };
-        Ok(rep)
+            Ok(format!(
+                "#{} module {} {{{}, {}, {}}}",
+                self.id, self.module_number, self.x, self.y, self.z
+            ))
+        }
+    }
+}
+
+// Impl PartialEq and Eq to compare Hit instances.
+impl PartialEq for Hit {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Hit {}
+
+// Impl Hash so that Hit can be used in hash-based collections.
+impl Hash for Hit {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
