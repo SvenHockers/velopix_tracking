@@ -3,10 +3,17 @@ name = "rust_algorithms"
 authors = ["Sven Hockers"]
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 [lib]
 name = "velopix_tracking"
 crate-type = ["cdylib"]
+
+[target.'cfg(test)'.lib]
+crate-type = ["dylib"]
+
+[target.'cfg(test)']
+rustflags = ["-C", "link-args=-undefined dynamic_lookup"]
 
 [dependencies]
 pyo3 = { version = "0.18", features = ["extension-module"] }

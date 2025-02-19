@@ -27,7 +27,7 @@ pub struct Event {
 #[pymethods]
 impl Event {
     #[new]
-    pub fn new(py: Python, json_data: &PyAny) -> PyResult<Self> {
+    pub fn new(_py: Python, json_data: &PyAny) -> PyResult<Self> {
         // Convert the input into a Python dictionary.
         let dict: &PyDict = json_data.downcast()?;
         

@@ -151,12 +151,10 @@ impl TrackFollowing {
                             }
                             let last_but_one = &track_hits[track_hits.len() - 2];
                             let last = &track_hits[track_hits.len() - 1];
-                            let mut found_next: bool = false;
                             for h2 in module.hits()? {
                                 if self.check_tolerance(last_but_one, last, &h2)? {
                                     forming_track.add_hit(h2.clone());
                                     missing_stations = 0;
-                                    found_next = true;
                                     break;
                                 }
                             }
