@@ -86,15 +86,15 @@ Module 0:
 This project includes three distinct methods to reconstruct particle tracks from detector hits. Each algorithm employs a unique strategy to link hits into coherent tracks, allowing you to choose the one that best fits your data and analysis needs.
 
 - **Simple Track-Following Algorithm**  
-  This method sequentially scans the detector modules, matching hits based on geometric constraints to form linear tracks.  
+  This method sequentially scans the detector modules, matching hits based on geometric constraints to form linear tracks. </br>
   [Learn more](./docs/ALGO_TrackFollowing.md)  
 
 - **Graph DFS Algorithm**  
-  In this approach, hits are first grouped into segments which become the nodes of a directed graph. A depth-first search (DFS) is then used to traverse the graph and extract tracks. 
+  In this approach, hits are first grouped into segments which become the nodes of a directed graph. A depth-first search (DFS) is then used to traverse the graph and extract tracks. </br>
   [Learn more](./docs/ALGO_DFS.md)  
 
 - **Final Merged-Triplet Algorithm**  
-  This advanced method merges detector modules in pairs to reduce complexity and builds a trie of compatible hit triplets based on a scatter metric. It uses both seeding and forwarding strategies to generate tracks.
+  This advanced method merges detector modules in pairs to reduce complexity and builds a trie of compatible hit triplets based on a scatter metric. It uses both seeding and forwarding strategies to generate tracks.</br>
   [Learn more](./docs/ALGO_SearchByTripletTree.md)
 
 
