@@ -6,6 +6,7 @@ use crate::event_model::hit::Hit;
 use crate::event_model::module::Module;
 
 #[pyclass]
+#[derive(Clone)]
 pub struct Event {
     #[pyo3(get)]
     pub description: String,

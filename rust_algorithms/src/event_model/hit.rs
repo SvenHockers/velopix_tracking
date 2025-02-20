@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 use std::hash::{Hash, Hasher};
+use std::fmt;
 
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -73,5 +74,12 @@ impl Eq for Hit {}
 impl Hash for Hit {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state);
+    }
+}
+
+// Used in the graph_DFS algo 
+impl fmt::Display for Hit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "TODO: Write output here")
     }
 }
