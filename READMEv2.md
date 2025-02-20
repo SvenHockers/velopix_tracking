@@ -115,19 +115,19 @@ To evaluate the algorithm, we check **three key metrics**:
 ✅ **Reconstruction Efficiency**:  
    *How many real tracks were successfully reconstructed?*  
    ```math
-   (# correctly reconstructed) / (# real tracks)
+   \frac{n_{reconstructed\_tracks}}{n_{real\_tracks}} = RC
    ```
 
 ✅ **Clone Tracks**:  
    *Duplicate tracks that match an already reconstructed one.*  
    ```math
-   (# clone tracks) / (# correctly reconstructed)
+   \frac{n_{clone\_tracks}}{n_{correct\_reconstructed\_tracks}} = CT
    ```
 
 ✅ **Ghost Tracks**:  
    *Fake tracks caused by noise or incorrect reconstruction.*  
    ```math
-   (# incorrectly reconstructed) / (# all reconstructed)
+   \frac{n_{incorrect\_reconstructed\_tracks}}{n_{real\_tracks}} = GT
    ```
 
 Run validation:
