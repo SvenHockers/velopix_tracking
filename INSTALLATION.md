@@ -20,7 +20,7 @@ To set up the environment, open a terminal (or command prompt) and run:
 ./manage_env.sh install
 ```
 
-This command will:
+This command will: \n
 ✅ Create a **virtual environment**  
 ✅ Install all required dependencies  
 ✅ Update dependencies to the latest compatible versions  
