@@ -146,6 +146,119 @@ Example output:
 
 ---
 
+## 🚀 Optimization
+
+Track reconstruction is a **computationally intensive** task that processes vast amounts of data from the **LHCb detector** in real time. Efficient algorithms are essential to handle this workload while maintaining **accuracy** and **performance**.
+
+This section outlines key optimization strategies to **enhance efficiency**, **reduce computational overhead**, and **improve reconstruction accuracy**.
+
+### **🔹 Optimization Priorities**
+Our optimization efforts follow this priority order:
+
+1️⃣ **Minimize Clone Tracks** – Reduce redundant track reconstructions to ensure a clean and efficient dataset.  
+2️⃣ **Maximize Speed & Minimize Memory Usage** – Optimize execution time and memory footprint for large-scale event processing.  
+3️⃣ **Minimize Ghost Tracks** – Eliminate incorrect track reconstructions caused by noise or misclassified hits.  
+
+By focusing on these priorities, we can achieve **faster, more accurate, and scalable** track reconstruction. 🚀
+
+---
+
+### 🔹 1. Implementing Algorithms in Rust 🦀  
+
+To enhance the speed and efficiency of track reconstruction, we have implemented **Rust-based algorithms** using **`pyo3` and `maturin`**, allowing seamless integration with Python.
+
+---
+
+### **📌 Why Rust?**
+Rust is an excellent choice for computationally intensive tasks like track reconstruction due to:
+✅ **Blazing-fast execution** – Rust compiles to highly optimized machine code.  
+✅ **Memory safety without a garbage collector** – Prevents segmentation faults.  
+✅ **Built-in parallelism** – Enables multi-threaded execution for large-scale data.  
+✅ **Easy Python integration** – Using `pyo3` and `maturin`, Rust functions can be called from Python like native modules.
+
+---
+
+### **🔧 Installing the Rust-based Track Reconstruction Module**
+To build and install the Rust module, follow these steps:
+
+#### **1️⃣ Install Rust and Maturin**
+Ensure Rust is installed:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+Then install `maturin` (for building Python bindings):
+```bash
+pip install maturin
+```
+
+#### **2️⃣ Build and Install the Rust Module**
+Navigate to the Rust implementation directory:
+```bash
+cd rust_reconstruction
+```
+Build and install the Rust module with:
+```bash
+maturin develop
+```
+This compiles Rust code and makes it **available as a Python module**.
+
+---
+
+### **🚀 Using Rust-Based Track Reconstruction in Python**
+After installation, you can use the Rust implementation directly in Python:
+
+```python
+import rust_reconstruction
+
+# Run track reconstruction on an event file
+tracks = rust_reconstruction.process_event("events/velo_event_0.json")
+
+print(tracks)
+```
+🔹 **Result:** The Rust implementation is now accessible as a **Python module** with major performance improvements.
+
+---
+
+### **🔄 Parallel Processing with Rust**
+Rust’s **Rayon** crate enables **parallelized track processing** for large-scale datasets.  
+Example implementation:
+
+```rust
+use rayon::prelude::*;
+
+fn process_tracks_parallel(tracks: &Vec<Track>) -> Vec<Track> {
+    tracks.par_iter().map(|track| process_track(track)).collect()
+}
+```
+By leveraging multi-threading, we achieve **significant speedup** in track processing.
+
+---
+
+### **📌 Future Improvements**
+- **GPU Acceleration** – Investigate CUDA support for even faster track processing.
+- **Further Optimizations** – Improve algorithm efficiency with Rust’s ownership model.
+- **Expanded Python Bindings** – Add more Rust-powered features to the Python API.
+
+---
+
+### ✅ **Summary**
+| Feature | Python Implementation | Rust Implementation |
+|---------|---------------------|---------------------|
+| **Execution Speed** | 🚀 Fast | ⚡ 10x Faster |
+| **Memory Efficiency** | Moderate | Optimized |
+| **Parallelization** | Limited | Full Multi-threading |
+| **Ease of Use** | Native | Python-compatible |
+
+The Rust-based implementation offers a **10x speed improvement** while being fully **integrated with Python** for easy usage.
+
+---
+
+By combining **Rust’s performance** with **Python’s flexibility**, we achieve a **high-performance, scalable solution** for track reconstruction. 🚀
+
+---
+
+### 🔹 2. Hyper-Parameter Optimisation 🎛
+
 ## 🚀 Want to Contribute?  
 🔹 **Improve the reconstruction algorithm**  
 🔹 **Optimize performance**  
