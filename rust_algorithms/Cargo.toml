@@ -1,5 +1,5 @@
 [package]
-name = "rust_algorithms"
+name = "velopix_tracking"
 authors = ["Sven Hockers"]
 version = "0.1.0"
 edition = "2021"

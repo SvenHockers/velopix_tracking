@@ -186,14 +186,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_algorithms"
-version = "0.1.0"
-dependencies = [
- "ordered-float",
- "pyo3",
-]
-
-[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -233,6 +225,14 @@ name = "unindent"
 version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1766d682d402817b5ac4490b3c3002d91dfa0d22812f341609f97b08757359c"
+
+[[package]]
+name = "velopix_tracking"
+version = "0.1.0"
+dependencies = [
+ "ordered-float",
+ "pyo3",
+]
 
 [[package]]
 name = "windows-targets"

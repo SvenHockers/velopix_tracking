@@ -1,0 +1,2 @@
+cargo:rustc-link-arg=-undefined
+cargo:rustc-link-arg=dynamic_lookup
