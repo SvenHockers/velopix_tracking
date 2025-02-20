@@ -1,30 +1,75 @@
-# Installation Guide
-The following guide will help with installing all dependensies to run the code in this repository. The guide has been made to be as simple as possible. 
+# 📦 Installation Guide
 
-After following this guide, you will have a virtual python environment which only contains the required dependensies. If you run into any issues first ensure you're IDE is configured to use this virual environment.
+This guide will walk you through setting up the environment and installing all required dependencies to run the code in this repository.  
+For simplicity, we use a **virtual Python environment**, ensuring all dependencies remain isolated.
 
-## Initial installation 
-During initial installation run the following command the terminal / cmd:
+🚀 **After completing this guide, you'll have:**
+- A fully functional virtual environment.
+- All required dependencies installed.
+- A clean workspace for running and developing the project.
+
+If you encounter issues, make sure your **IDE is configured** to use the correct virtual environment.
+
+---
+
+## 🔧 Initial Installation
+
+To set up the environment, open a terminal (or command prompt) and run:
+
 ```bash
 ./manage_env.sh install
 ```
 
-This will automatically create a virtual environment, updated it and install all dependensies. 
+This command will:
+✅ Create a **virtual environment**  
+✅ Install all required dependencies  
+✅ Update dependencies to the latest compatible versions  
 
-## Update 
-If during the course of this project additional dependensies are required add them to the `requirement.txt` file with the correct version of the dependensie. After update the virtual environment by running:
+---
+
+## 🔄 Updating Dependencies
+
+If new dependencies are required during development:
+1. **Add the new package** (with the correct version) to `requirements.txt`.
+2. Run the following command to update the environment:
+
 ```bash
 ./manage_env.sh update
 ```
 
-## Common Issues
+This ensures your environment stays up to date with the latest project requirements.
 
-permission denied
+---
+
+## ⚠️ Common Issues & Fixes
+
+### 🛑 Permission Denied for `manage_env.sh`
+If you encounter a **permission denied** error when running the script:
 ```bash
 chmod +x manage_env.sh
 ```
+This grants execution permission to the script.
 
-activating environment
+### 🚀 Activating the Virtual Environment
+If the environment is not active, manually activate it using:
 ```bash
 source venv/bin/activate
 ```
+For Windows users (Command Prompt):
+```cmd
+venv\Scripts\activate
+```
+For Windows users (PowerShell):
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+---
+
+## ✅ You're All Set!
+You should now have everything installed and ready to go. Run the project with:
+```bash
+python3 run_track_reconstruction.py
+```
+
+For further troubleshooting or contributions, check the [README](../README.md). 🚀
