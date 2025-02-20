@@ -9,7 +9,7 @@ use crate::algorithms::track_following::TrackFollowing;
 // use crate::algorithms::search_by_triplet_trie;
 
 #[pymodule]
-fn modules(_py: Python, m: &PyModule) -> PyResult<()> {
+fn velopix_tracking(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<Event>()?;
     m.add_class::<TrackFollowing>()?;
 
