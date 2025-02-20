@@ -8,7 +8,11 @@ Run the reconstruction algorithm with:
 python3 run_track_reconstruction.py
 ```
 
+For installation details, refer to [Installation Guide](./docs/INSTALLATION.md).
+
 ---
+
+
 
 ## 📌 What is Track Reconstruction?
 
