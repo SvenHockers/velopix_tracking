@@ -64,21 +64,27 @@ impl Event {
             for i in start..end {
                 // Create a new Hit instance.
                 let hit_obj = if with_t {
-                    Hit::new(x[i], y[i], z[i],
+                    Hit::new(
+                        x[i],
+                        y[i],
+                        z[i],
                         i as u32,
                         Some(m as i32),
                         Some(t.as_ref().unwrap()[i]),
                         Some(true),
                     )
                 } else {
-                    Hit::new(x[i], y[i], z[i],
+                    Hit::new(
+                        x[i],
+                        y[i],
+                        z[i],
                         i as u32,
                         Some(m as i32),
                         None,
                         None,
                     )
                 };
-                // Insert the z value into the set, wrapped in OrderedFloat (without wrapper we run into errors with the insert methods).
+                // Insert the z value into the set.
                 module_zs_sets[m].insert(OrderedFloat(z[i]));
                 hits.push(hit_obj);
             }
@@ -89,15 +95,16 @@ impl Event {
             .map(|set| set.into_iter().map(|of| of.into_inner()).collect())
             .collect();
 
-        // Create modules. Note: here we clone the `hits` vector for simplicity.
-        let mut modules = Vec::with_capacity(number_of_modules);
-        for m in 0..number_of_modules {
-            let start = module_prefix_sum[m];
-            let count = module_prefix_sum[m + 1] - module_prefix_sum[m];
-            // Use the corresponding z values from module_zs.
-            modules.push(Module::new(m as u32, module_zs[m].clone(), start, count, hits.clone()));
-        }
-
+        // Create modules.
+        // Note: We pass the absolute end index (module_prefix_sum[m + 1]) instead of the hit count.
+        let modules: Vec<Module> = (0..number_of_modules)
+            .map(|m| {
+                let start = module_prefix_sum[m];
+                let end = module_prefix_sum[m + 1];
+                Module::new(m as u32, module_zs[m].clone(), start, end, hits.clone())
+            })
+            .collect::<PyResult<Vec<_>>>()?;
+        
         // Return the constructed Event instance.
         Ok(Event {
             description,
