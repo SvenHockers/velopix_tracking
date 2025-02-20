@@ -219,7 +219,7 @@ print(tracks)
 
 ---
 
-### **🔄 Parallel Processing with Rust**
+### **🔄 Parallel Processing with Rust (In development)**
 Rust’s **Rayon** crate enables **parallelized track processing** for large-scale datasets.  
 Example implementation:
 
