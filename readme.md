@@ -19,7 +19,7 @@ For installation details, refer to [Installation Guide](./docs/INSTALLATION.md).
 At the **LHCb detector**, millions of particles collide, leaving hits on detector modules.  
 Multiple collisions happening simultaneously are grouped into an **event**, which is processed in real-time to reconstruct the individual tracks of particles.
 
-This project provides:
+This project provides: </br>
 ✅ **Sample events in JSON format**  
 ✅ **A reconstruction algorithm**  
 ✅ **Validation tools to check performance**  
@@ -170,7 +170,7 @@ To enhance the speed and efficiency of track reconstruction, we have implemented
 ---
 
 ### **📌 Why Rust?**
-Rust is an excellent choice for computationally intensive tasks like track reconstruction due to:
+Rust is an excellent choice for computationally intensive tasks like track reconstruction due to: </br>
 ✅ **Blazing-fast execution** – Rust compiles to highly optimized machine code.  
 ✅ **Memory safety without a garbage collector** – Prevents segmentation faults.  
 ✅ **Built-in parallelism** – Enables multi-threaded execution for large-scale data.  
