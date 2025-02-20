@@ -72,4 +72,4 @@ You should now have everything installed and ready to go. Run the project with:
 python3 run_track_reconstruction.py
 ```
 
-For further troubleshooting or contributions, check the [README](../README.md). 🚀
+For further troubleshooting or contributions, check the [README](README.md). 🚀
