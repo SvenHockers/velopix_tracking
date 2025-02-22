@@ -359,7 +359,7 @@ impl GraphDFS {
 
     /// Prunes short tracks (clone/ghost killing).
     pub fn prune_short_tracks(&self, tracks: Vec<Track>) -> PyResult<Vec<Track>> {
-        let mut used_hits: HashSet<u32> = HashSet::new();
+        let mut used_hits: HashSet<i32> = HashSet::new();
         for t in &tracks {
             if t.hits.len() > 3 {
                 for h in &t.hits {
