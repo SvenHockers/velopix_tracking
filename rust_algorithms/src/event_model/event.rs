@@ -96,7 +96,6 @@ impl Event {
             .collect();
 
         // Create modules.
-        // NOTE: Here we assume Module::new expects a single f64 for the z value.
         // We pass the first unique z value for module m (i.e. module_zs[m][0]).
         let modules: Vec<Module> = (0..number_of_modules)
             .map(|m| {
