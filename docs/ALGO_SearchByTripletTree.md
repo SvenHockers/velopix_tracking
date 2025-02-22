@@ -91,9 +91,9 @@ Tracks are classified based on their length:
 - **Strong Tracks**: $ \lvert T \rvert \geq 4 $  
 - **Weak Tracks**: $ \lvert T \rvert = 3 $  
 A pruning function removes duplicate or "ghost" tracks, ensuring that overlapping tracks do not contaminate the final set:
-```math
+$$
 \mathcal{T}_{\text{final}} = \{ T \mid T \text{ is unique and } (\lvert T \rvert \geq 4 \text{ or non-overlapping weak track}) \}.
-```
+$$
 
 ### 6. **Validation**
 
