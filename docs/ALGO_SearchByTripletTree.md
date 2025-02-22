@@ -73,23 +73,23 @@ Tracks are constructed by two complementary strategies:
 
 - **Forwarding**:  
   Given a partial track $T = [h_0, h_1, \dots, h_n]$ with the last two hits $(h_{n-1}, h_n)$, check the trie for a compatible hit:
-  ```math
+  $$
   \text{If } \mathcal{T}(h_{n-1})[h_n] \text{ exists, then append } h_{n+1} = h_2^* \text{ to } T.
-  ```
+  $$
   If no compatible hit is found, the algorithm may tolerate a missed module. After two consecutive misses, the track is finalized.
 
 - **Seeding**:  
   Independently, new tracks are seeded from unused candidate triplets:
-  ```math
+  $$
   T_{\text{seed}} = [h_0, h_1, h_2^*],
-  ```
+  $$
   provided none of $h_0, h_1, h_2^*$ have been flagged as already used.
 
 ### 5. **Track Classification and Pruning**
 
 Tracks are classified based on their length:
-- **Strong Tracks**: $ \lvert T \rvert \geq 4 $  
-- **Weak Tracks**: $ \lvert T \rvert = 3 $  
+- **Strong Tracks**: $\lvert T \rvert \geq 4$  
+- **Weak Tracks**: $\lvert T \rvert = 3$  
 A pruning function removes duplicate or "ghost" tracks, ensuring that overlapping tracks do not contaminate the final set:
 $$
 \mathcal{T}_{\text{final}} = \{ T \mid T \text{ is unique and } (\lvert T \rvert \geq 4 \text{ or non-overlapping weak track}) \}.
