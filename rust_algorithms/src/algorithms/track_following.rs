@@ -10,6 +10,8 @@ pub struct TrackFollowing {
     max_slopes: (f64, f64),
     max_tolerance: (f64, f64),
     max_scatter: f64,
+    min_track_length: u8,
+    min_strong_track_length: u8
 }
 
 #[pymethods]
@@ -19,10 +21,15 @@ impl TrackFollowing {
         max_slopes: Option<(f64, f64)>,
         max_tolerance: Option<(f64, f64)>,
         max_scatter: Option<f64>,
+        min_track_length: Option<u8>,
+        min_strong_track_length: Option<u8>
     ) -> Self {
         let max_slopes: (f64, f64) = max_slopes.unwrap_or((0.7, 0.7));
         let max_tolerance: (f64, f64) = max_tolerance.unwrap_or((0.4, 0.4));
         let max_scatter: f64 = max_scatter.unwrap_or(0.4);
+        let min_track_length: u8 = min_track_length.unwrap_or(3);
+        let min_strong_track_length: u8 = min_strong_track_length.unwrap_or(4);
+
 
         println!(
             "Instantiating track_following solver with parameters\n max slopes: {:?}\n max tolerance: {:?}\n max scatter: {}\n",
@@ -33,6 +40,8 @@ impl TrackFollowing {
             max_slopes,
             max_tolerance,
             max_scatter,
+            min_track_length,
+            min_strong_track_length
         }
     }
 
@@ -160,9 +169,9 @@ impl TrackFollowing {
                             }
                         }
                         // Classify track as weak or strong.
-                        if forming_track.hits.len() == 3 {
+                        if forming_track.hits.len() == self.min_track_length.into() {
                             weak_tracks.push(forming_track);
-                        } else if forming_track.hits.len() >= 4 {
+                        } else if forming_track.hits.len() >= self.min_strong_track_length.into() {
                             tracks.push(forming_track.clone());
                             // Mark hits as used.
                             for h in forming_track.hits.iter() {
