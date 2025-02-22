@@ -3,10 +3,10 @@ use std::hash::{Hash, Hasher};
 use std::fmt;
 
 #[pyclass]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug)]  
 pub struct Hit {
     #[pyo3(get)]
-    pub id: u32,
+    pub id: i32,
     #[pyo3(get)]
     pub x: f64,
     #[pyo3(get)]
@@ -30,7 +30,7 @@ impl Hit {
         x: f64, 
         y: f64, 
         z: f64, 
-        hit_id: u32, 
+        hit_id: i32, 
         module: Option<i32>,
         t: Option<f64>, 
         with_t: Option<bool>
