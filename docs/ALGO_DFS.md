@@ -100,7 +100,7 @@ This ensures that the final track set $ \mathcal{T} $ consists of unique, high-c
 
 ## 🎯 Conclusion
 
-The **graph_dfs** algorithm transforms the problem of track reconstruction into a graph search problem. By representing hit connections as segments and leveraging compatibility functions $ \mathcal{T} $, the method assigns weights and detects root segments from which tracks are extracted using DFS. Pruning further refines the result to yield a set of unique tracks, balancing sensitivity and specificity in the reconstruction process.
+The **graph_dfs** algorithm transforms the problem of track reconstruction into a graph search problem. By representing hit connections as segments and leveraging compatibility functions $\mathcal{T}$, the method assigns weights and detects root segments from which tracks are extracted using DFS. Pruning further refines the result to yield a set of unique tracks, balancing sensitivity and specificity in the reconstruction process.
 
 ---
 [Go Back](../readme.md)
