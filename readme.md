@@ -21,7 +21,7 @@ Multiple collisions happening simultaneously are grouped into an **event**, whic
 
 This project provides: </br>
 ✅ **Sample events in JSON format**  
-✅ **A reconstruction algorithm**  
+✅ **Three reconstruction algorithm**  
 ✅ **Validation tools to check performance**  
 
 The algorithm **matches detected hits** with actual particle tracks from the event to assess reconstruction accuracy.
@@ -81,33 +81,22 @@ Module 0:
 
 ---
 
-### 3️⃣ **Track Reconstruction Algorithm**
-A **simple track-following algorithm** sequentially scans modules to match hits into **linear tracks**.
+### 3️⃣ **Track Reconstruction Algorithms**
 
-```python
-from algorithms.track_following import track_following
-tracks = track_following().solve(event)
-```
-Output:
-```
-Instantiating track_following solver with parameters
- max slopes: (0.7, 0.7)
- max tolerance: (0.4, 0.4)
- max scatter: 0.4
-```
-Total reconstructed tracks:
-```python
-print(len(tracks))  # Output: 148
-```
-Example of a reconstructed track:
-```python
-print(tracks[0])
-```
-```
-Track with 9 hits: [#985 module 51 {-8.343, 17.073, 749.419}, #962 module 49 {-7.759, 15.945, 699.419}, ...]
-```
+This project includes three distinct methods to reconstruct particle tracks from detector hits. Each algorithm employs a unique strategy to link hits into coherent tracks, allowing you to choose the one that best fits your data and analysis needs.
 
----
+- **Simple Track-Following Algorithm**  
+  This method sequentially scans the detector modules, matching hits based on geometric constraints to form linear tracks. </br>
+  [Learn more](./docs/ALGO_TrackFollowing.md)  
+
+- **Graph DFS Algorithm**  
+  In this approach, hits are first grouped into segments which become the nodes of a directed graph. A depth-first search (DFS) is then used to traverse the graph and extract tracks. </br>
+  [Learn more](./docs/ALGO_DFS.md)  
+
+- **Final Merged-Triplet Algorithm**  
+  This advanced method merges detector modules in pairs to reduce complexity and builds a trie of compatible hit triplets based on a scatter metric. It uses both seeding and forwarding strategies to generate tracks.</br>
+  [Learn more](./docs/ALGO_SearchByTripletTree.md)
+
 
 ### 4️⃣ **Validation & Performance Metrics**
 To evaluate the algorithm, we check **three key metrics**:
