@@ -11,7 +11,7 @@ class TrackFollowing:
                  merge_factor=2,
                  trie_size=26,
                  min_hits_for_flag=4,
-                 max_hits_for_track=4,
+                 min_hits_for_track=4,
                  forward_offset=2,
                  dummy_hit_params=(0, 0, 0, -1),
                  # Merging strategy functions:
