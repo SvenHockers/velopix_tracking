@@ -5,7 +5,7 @@ import validator_lite as vl
 import json
 from event_model import *  # Assumes definitions for event, module, hit, track, etc.
 
-class TrackFollowing:
+class SearchByTripletTrie:
     def __init__(self,
                  max_scatter=0.1,
                  merge_factor=2,
