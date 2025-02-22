@@ -16,7 +16,7 @@ pub struct Event {
     pub module_prefix_sum: Vec<usize>,
     #[pyo3(get)]
     pub number_of_hits: usize,
-    /// Converted to a Vec of f64 values for each module.
+    /// For each module, a vector of unique z values.
     #[pyo3(get)]
     pub module_zs: Vec<Vec<f64>>,
     #[pyo3(get)]
@@ -29,7 +29,7 @@ pub struct Event {
 impl Event {
     #[new]
     pub fn new(_py: Python, json_data: &PyAny) -> PyResult<Self> {
-        // Convert the input into a Python dictionary.
+        // Convert input into a Python dictionary.
         let dict: &PyDict = json_data.downcast()?;
         
         // Extract required fields.
@@ -63,13 +63,12 @@ impl Event {
             let start = module_prefix_sum[m];
             let end = module_prefix_sum[m + 1];
             for i in start..end {
-                // Create a new Hit instance.
                 let hit_obj = if with_t {
                     Hit::new(
                         x[i],
                         y[i],
                         z[i],
-                        i as u32,
+                        i as i32,
                         Some(m as i32),
                         Some(t.as_ref().unwrap()[i]),
                         Some(true),
@@ -79,13 +78,13 @@ impl Event {
                         x[i],
                         y[i],
                         z[i],
-                        i as u32,
+                        i as i32,
                         Some(m as i32),
                         None,
                         None,
                     )
                 };
-                // Insert the z value into the set.
+                // Insert the z value into the module's set.
                 module_zs_sets[m].insert(OrderedFloat(z[i]));
                 hits.push(hit_obj);
             }
@@ -97,12 +96,14 @@ impl Event {
             .collect();
 
         // Create modules.
-        // Note: We pass the absolute end index (module_prefix_sum[m + 1]) instead of the hit count.
+        // NOTE: Here we assume Module::new expects a single f64 for the z value.
+        // We pass the first unique z value for module m (i.e. module_zs[m][0]).
         let modules: Vec<Module> = (0..number_of_modules)
             .map(|m| {
                 let start = module_prefix_sum[m];
                 let end = module_prefix_sum[m + 1];
-                Module::new(m as u32, module_zs[m].clone(), start, end, hits.clone())
+                // Use the first unique z value for the module.
+                Module::new(m as u32, module_zs[m][0], start, end, hits.clone())
             })
             .collect::<PyResult<Vec<_>>>()?;
         
