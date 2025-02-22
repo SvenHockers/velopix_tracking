@@ -21,7 +21,7 @@ Multiple collisions happening simultaneously are grouped into an **event**, whic
 
 This project provides: </br>
 ✅ **Sample events in JSON format**  
-✅ **A reconstruction algorithm**  
+✅ **Three reconstruction algorithm**  
 ✅ **Validation tools to check performance**  
 
 The algorithm **matches detected hits** with actual particle tracks from the event to assess reconstruction accuracy.
