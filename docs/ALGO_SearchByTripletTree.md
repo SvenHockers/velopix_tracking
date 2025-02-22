@@ -73,16 +73,16 @@ Tracks are constructed by two complementary strategies:
 
 - **Forwarding**:  
   Given a partial track $T = [h_0, h_1, \dots, h_n]$ with the last two hits $(h_{n-1}, h_n)$, check the trie for a compatible hit:
-  $$
+  ```math
   \text{If } \mathcal{T}(h_{n-1})[h_n] \text{ exists, then append } h_{n+1} = h_2^* \text{ to } T.
-  $$
+  ```
   If no compatible hit is found, the algorithm may tolerate a missed module. After two consecutive misses, the track is finalized.
 
 - **Seeding**:  
   Independently, new tracks are seeded from unused candidate triplets:
-  $$
-  T_{\text{seed}} = [h_0, h_1, h_2^*],
-  $$
+  ```math
+  T_{seed} = [h_0, h_1, h_2^*]
+  ```
   provided none of $h_0, h_1, h_2^*$ have been flagged as already used.
 
 ### 5. **Track Classification and Pruning**
