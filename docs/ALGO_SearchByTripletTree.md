@@ -20,7 +20,7 @@ The final algorithm proceeds in several stages:
 
 ### 1. **Module Merging**
 
-Let the original detector modules be denoted as $ M_0, M_1, M_2, \dots $. We form merged modules by pairing:
+Let the original detector modules be denoted as $M_0, M_1, M_2, \dots$. We form merged modules by pairing:
 ```math
 M_i^{\text{merged}} = \text{Merge}(M_{2i}, M_{2i+1})
 ```
