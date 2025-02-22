@@ -9,12 +9,14 @@ In the **graph_dfs** approach, particle hits are first pre-ordered and then conn
 3. **Segment Construction**: Form segments between hits that are compatible in both $x$ and $y$ directions.
 4. **Graph Formation**: Build a directed graph where nodes are segments and an edge from segment $s_0$ to $s_1$ exists if $s_1$ can continue $s_0$ (i.e., $s_0.h_1 = s_1.h_0$) and the combined segment passes a tolerance check.
 5. **Weight Assignment and Root Detection**: Propagate weights through the graph such that for a segment $s$,
+    <span class="math">\( w(s) = \max_{s' \in \mathcal{C}(s)} \, w(s') + 1, \)</span>
+
    ```math
    w(s) = \max_{s' \in \mathcal{C}(s)} \, w(s') + 1,
    ```
    where $\mathcal{C}(s)$ is the set of segments compatible with $s$. Segments with no incoming edges (or those not “dominated” by others) are marked as **root segments**.
-6. **Depth-First Search (DFS)**: Starting from each root segment, perform DFS to extract the longest contiguous sequence of segments, yielding a candidate track.
-7. **Pruning**: Apply clone and ghost killing to remove short or redundant tracks, ensuring uniqueness.
+7. **Depth-First Search (DFS)**: Starting from each root segment, perform DFS to extract the longest contiguous sequence of segments, yielding a candidate track.
+8. **Pruning**: Apply clone and ghost killing to remove short or redundant tracks, ensuring uniqueness.
 
 ---
 
