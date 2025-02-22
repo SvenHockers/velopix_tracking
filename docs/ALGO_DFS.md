@@ -23,11 +23,11 @@ In the **graph_dfs** approach, particle hits are first pre-ordered and then conn
 
 ### 1. **Pre-ordering and Candidate Generation**
 
-Let $ H = \{h_1, h_2, \dots, h_N\} $ denote the set of all hits ordered by module and sorted by $x$. Each hit $ h_i $ is represented as:
+Let $H = \{h_1, h_2, \dots, h_N\}$ denote the set of all hits ordered by module and sorted by $x$. Each hit $h_i$ is represented as:
 ```math
 h_i = (x_i, y_i, z_i), \quad \text{with a unique hit number } n_i.
 ```
-For each hit $ h_i $ in module $ m $, define a candidate set $ C_i $ in an earlier module $ m' $ such that:
+For each hit $h_i$ in module $m$, define a candidate set $C_i$ in an earlier module $m'$ such that:
 ```math
 C_i(m') = \{ h_j \in \text{module } m' \mid |x_j - x_i| < \alpha_x \cdot |z_j - z_i| \},
 ```
@@ -35,15 +35,15 @@ where $\alpha_x$ is the maximum allowed slope in $x$.
 
 ### 2. **Segment Construction**
 
-A **segment** $ s $ is defined as an ordered pair of hits:
+A **segment** $s$ is defined as an ordered pair of hits:
 ```math
 s = (h_0, h_1),
 ```
-where $ h_0 $ and $ h_1 $ satisfy:
+where $h_0$ and $h_1$ satisfy:
 ```math
 |x_1 - x_0| < \alpha_x \cdot |z_1 - z_0| \quad \text{and} \quad |y_1 - y_0| < \alpha_y \cdot |z_1 - z_0|.
 ```
-Furthermore, a tolerance function $ \mathcal{T}(h_0, h_1, h_2) $ is defined to verify the consistency of a predicted hit $ h_2 $ with a segment:
+Furthermore, a tolerance function $\mathcal{T}(h_0, h_1, h_2)$ is defined to verify the consistency of a predicted hit $h_2$ with a segment:
 ```math
 \begin{aligned}
 t_x &= \frac{x_1 - x_0}{z_1 - z_0}, \quad t_y = \frac{y_1 - y_0}{z_1 - z_0}, \\
@@ -55,8 +55,8 @@ with $T_x, T_y$ being the tolerances and $S$ the maximum scatter allowed.
 
 ### 3. **Graph Formation**
 
-Let $ \mathcal{S} $ be the set of all segments constructed. Define a directed edge $ s_0 \to s_1 $ if:
-- The endpoint of $ s_0 $ matches the starting point of $ s_1 $:
+Let $\mathcal{S}$ be the set of all segments constructed. Define a directed edge $s_0 \to s_1$ if:
+- The endpoint of $s_0$ matches the starting point of $s_1$:
   ```math
   s_0.h_1 = s_1.h_0,
   ```
@@ -75,11 +75,11 @@ Weights are iteratively assigned to segments to reflect their ability to extend 
 ```math
 w(s) = \max_{s' \in \mathcal{C}(s)} \, w(s') + 1, \quad \text{for a fixed number of iterations.}
 ```
-A segment is designated as a **root segment** if it is not a continuation of any other segment, i.e., if no segment $ s' $ exists such that $ s' \to s $.
+A segment is designated as a **root segment** if it is not a continuation of any other segment, i.e., if no segment $s'$ exists such that $s' \to s$.
 
 ### 5. **Track Extraction via DFS**
 
-For each root segment $ s_{\text{root}} $, the DFS explores paths:
+For each root segment $s_{\text{root}}$, the DFS explores paths:
 ```math
 \text{DFS}(s_{\text{root}}) = \{ h_0, h_1, \dots, h_k \},
 ```
