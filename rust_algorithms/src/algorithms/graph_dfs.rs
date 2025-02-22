@@ -38,6 +38,7 @@ impl std::fmt::Display for Segment {
 
 #[pyclass]
 #[derive(Clone)]
+#[pyo3(text_signature = "(cls, max_slopes=None, max_tolerance=None, max_scatter=None, minimum_root_weight=None, weight_assignment_iterations=None, allowed_skip_modules=None, allow_cross_track=None, clone_ghost_killing=None)")]
 pub struct GraphDFS {
     max_slopes: (f64, f64),
     max_tolerance: (f64, f64),
@@ -75,6 +76,7 @@ impl GraphDFS {
     }
 
     /// Solves the event using the DFS strategy and returns a list of Tracks.
+    #[pyo3(text_signature = "($self, event)")]
     pub fn solve(&self, event: &Event) -> PyResult<Vec<Track>> {
         println!(
             "Invoking graph dfs with\n max slopes: {:?}\n max tolerance: {:?}\n max scatter: {}\n weight assignment iterations: {}\n minimum root weight: {}\n allow cross track: {}\n allowed skip modules: {}\n clone ghost killing: {}\n",

@@ -7,6 +7,7 @@ use crate::event_model::module::Module;
 
 #[pyclass]
 #[derive(Clone)]
+#[pyo3(text_signature = "(cls, max_scatter=None, min_track_length=None, min_strong_track_length=None, allowed_missed_modules=None)")]
 pub struct SearchByTripletTrie {
     max_scatter: f64,
     min_track_length: usize,
@@ -44,6 +45,7 @@ impl SearchByTripletTrie {
 
     /// Public method exposed to Python.
     /// Processes the event to assemble tracks.
+    #[pyo3(text_signature = "($self, event)")]
     pub fn solve(&self, event: &Event) -> Vec<Track> {
         let module_pairs = self.merge_module_pairs(event);
         let compatible_triplets_trie = self.generate_compatible_triplets(&module_pairs);

@@ -6,6 +6,7 @@ use crate::event_model::track::Track;
 
 #[pyclass]
 #[derive(Clone)]
+#[pyo3(text_signature = "(cls, max_slopes=None, max_tolerance=None, max_scatter=None, min_track_length=None, min_strong_track_length=None)")]
 pub struct TrackFollowing {
     max_slopes: (f64, f64),
     max_tolerance: (f64, f64),
@@ -87,6 +88,7 @@ impl TrackFollowing {
 
     // Given an Event, attempts to solve and find tracks.
     // Returns a list of Tracks.
+    #[pyo3(text_signature = "($self, event)")]
     pub fn solve(&self, event: &Event) -> PyResult<Vec<Track>> {
         let mut weak_tracks: Vec<Track> = Vec::new();
         let mut tracks: Vec<Track> = Vec::new();
