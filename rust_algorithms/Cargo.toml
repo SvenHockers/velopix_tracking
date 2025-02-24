@@ -12,3 +12,4 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.18", features = ["extension-module"] }
 ordered-float = "3.6"
+itertools = "0.10.5"

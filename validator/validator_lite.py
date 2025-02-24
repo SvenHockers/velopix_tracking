@@ -186,7 +186,9 @@ def comp_weights(tracks, event):
         if nhits >= 2:
             particle = event.particles[j]
             # try:
-            nhits_from_p = len([h for h in trackhits if event.hit_to_mcp[h].count(particle) > 0])
+            nhits_from_p = len([h for h in trackhits if (event.hit_to_mcp.get(h, [])).count(particle) > 0]) # Return empty list if h not in event.hit_to_mcp
+
+            # nhits_from_p = len([h for h in trackhits if event.hit_to_mcp[h].count(particle) > 0])
             # except:
             #     print(event.hit_to_mcp)
             #     raise
