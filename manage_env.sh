@@ -29,6 +29,10 @@ if [ "$action" == "install" ]; then
     echo "Installing dependencies from requirements.txt..."
     pip install -r requirements.txt
 
+    cd rust_algorithms
+    maturin develop
+    cd ..
+
 elif [ "$action" == "update" ]; then
     # Ensure the virtual environment exists
     if [ ! -d "$venv_dir" ]; then
@@ -45,6 +49,10 @@ elif [ "$action" == "update" ]; then
 
     echo "Updating dependencies from requirements.txt..."
     pip install --upgrade -r requirements.txt
+
+    cd rust_algorithms
+    maturin develop
+    cd ..
 
 else
     echo "Invalid argument: $action"
