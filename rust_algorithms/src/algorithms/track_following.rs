@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use rayon::prelude::*;
 use crate::event_model::hit::Hit;
 use crate::event_model::event::Event;
 use crate::event_model::module::Module;
@@ -206,4 +207,127 @@ impl TrackFollowing {
         }
         Ok(tracks)
     }
+
+    #[pyo3(text_signature = "($self, event)")]
+    pub fn solve_parallel(&self, event: &Event) -> PyResult<Vec<Track>> {
+        pyo3::Python::with_gil(|py| {
+            py.allow_threads(|| {
+                let modules = &event.modules;
+                let num_modules = modules.len();
+                if num_modules < 3 {
+                    return Ok(Vec::new());
+                }
+
+                let s0_rev: Vec<&Module> = modules[3..].iter().rev().collect();
+                let s1_rev: Vec<&Module> = modules[1..(num_modules - 2)].iter().rev().collect();
+                let indices_rev: Vec<usize> = (0..(num_modules - 3)).rev().collect();
+
+                let seed_candidates: Vec<(&Module, &Module, usize)> = s0_rev
+                    .into_iter()
+                    .zip(s1_rev.into_iter())
+                    .zip(indices_rev.into_iter())
+                    .map(|((s0, s1), starting_module_index)| (s0, s1, starting_module_index))
+                    .collect();
+
+                let candidate_results: Vec<(Vec<Track>, Vec<Track>)> = seed_candidates
+                    .par_iter()
+                    .map(|&(s0, s1, starting_module_index)| {
+                        let mut local_weak_tracks = Vec::new();
+                        let mut local_strong_tracks = Vec::new();
+
+                        let hits_s0 = s0.hits().unwrap_or_default();
+                        let hits_s1 = s1.hits().unwrap_or_default();
+
+                        for h0 in hits_s0.iter() {
+                            for h1 in hits_s1.iter() {
+                                if let Ok(false) = self.are_compatible(h0, h1) {
+                                    continue;
+                                }
+
+                                let mut forming_track = Track::new(vec![h0.clone(), h1.clone()]);
+                                let mut h2_found = false;
+                                let mut module_index_iter: isize = -1;
+
+                                let lower = if starting_module_index >= 2 {
+                                    starting_module_index - 2
+                                } else {
+                                    0
+                                };
+
+                                for module_index in (lower..=starting_module_index).rev() {
+                                    if module_index >= modules.len() {
+                                        continue;
+                                    }
+                                    let module = &modules[module_index];
+                                    let hits_module = module.hits().unwrap_or_default();
+                                    for h2 in hits_module.iter() {
+                                        if let Ok(true) = self.check_tolerance(h0, h1, h2) {
+                                            forming_track.add_hit(h2.clone());
+                                            h2_found = true;
+                                            module_index_iter = module_index as isize;
+                                            break;
+                                        }
+                                    }
+                                    if h2_found {
+                                        break;
+                                    }
+                                }
+
+                                if h2_found {
+                                    let mut missing_stations = 0;
+                                    while module_index_iter > 0 && missing_stations < 3 {
+                                        module_index_iter -= 1;
+                                        missing_stations += 1;
+                                        let module = &modules[module_index_iter as usize];
+                                        let track_hits = &forming_track.hits;
+                                        if track_hits.len() < 2 {
+                                            break;
+                                        }
+                                        let last_but_one = &track_hits[track_hits.len() - 2];
+                                        let last = &track_hits[track_hits.len() - 1];
+                                        let hits_module = module.hits().unwrap_or_default();
+                                        for h2 in hits_module.iter() {
+                                            if let Ok(true) = self.check_tolerance(last_but_one, last, h2) {
+                                                forming_track.add_hit(h2.clone());
+                                                missing_stations = 0;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if forming_track.hits.len() as u8 == self.min_track_length {
+                                        local_weak_tracks.push(forming_track);
+                                    } else if forming_track.hits.len() as u8 >= self.min_strong_track_length {
+                                        local_strong_tracks.push(forming_track);
+                                    }
+                                }
+                            }
+                        }
+                        (local_weak_tracks, local_strong_tracks)
+                    })
+                    .collect();
+
+                let mut weak_tracks = Vec::new();
+                let mut tracks = Vec::new();
+                for (mut local_weak, mut local_strong) in candidate_results {
+                    weak_tracks.append(&mut local_weak);
+                    tracks.append(&mut local_strong);
+                }
+
+                let mut used_hits: Vec<Hit> = Vec::new();
+                for t in weak_tracks {
+                    if t.hits.iter().all(|h| !used_hits.contains(h)) {
+                        for h in t.hits.iter() {
+                            if !used_hits.contains(h) {
+                                used_hits.push(h.clone());
+                            }
+                        }
+                        tracks.push(t);
+                    }
+                }
+
+                Ok(tracks)
+            })
+        })
+    }
+
 }

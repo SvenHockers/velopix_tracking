@@ -3,12 +3,12 @@ use pyo3::prelude::*;
 // include custom impl
 mod algorithms;
 mod event_model;
-mod validator;
+// mod validator;
 use crate::event_model::event::Event;
 use crate::algorithms::track_following::TrackFollowing;
 use crate::algorithms::graph_dfs::GraphDFS;
 use crate::algorithms::search_by_triplet_trie::SearchByTripletTrie;
-// use crate::validator::{MCParticle, Efficiency, validate_print, validate_efficiency};
+// use crate::validator::validator::{ validate_print, validate_efficiency };
 
 #[pymodule]
 fn velopix_tracking(_py: Python, m: &PyModule) -> PyResult<()> {

@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use crate::event_model::hit::Hit;
 use crate::event_model::event::Event;
@@ -128,6 +129,55 @@ impl GraphDFS {
             tracks = self.prune_short_tracks(tracks)?;
         }
         Ok(tracks)
+    }
+
+    #[pyo3(text_signature = "($self, event)")]
+    pub fn solve_parallel(&self, event: &Event) -> PyResult<Vec<Track>> {
+        pyo3::Python::with_gil(|py| {
+            py.allow_threads(|| {
+                let mut event_copy = event.clone();
+                self.order_hits(&mut event_copy)?;
+                let candidates = self.fill_candidates(&event_copy)?;
+                let (mut segments, _outer_hit_segment_list, compatible_segments, populated_compatible_segments) =
+                    self.populate_segments(&event_copy, &candidates)?;
+                self.assign_weights_and_populate_roots(&mut segments, &compatible_segments, &populated_compatible_segments)?;
+
+                let root_segments: Vec<&Segment> = populated_compatible_segments
+                    .iter()
+                    .filter_map(|&segid| {
+                        let seg = &segments[segid];
+                        if seg.root_segment && seg.weight >= self.minimum_root_weight {
+                            Some(seg)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                let dfs_tracks_results: Vec<PyResult<Track>> = root_segments
+                    .par_iter()
+                    .map(|root_seg| {
+                        let dfs_paths = self.dfs(root_seg, &segments, &compatible_segments)?;
+                        let mut selected_paths = dfs_paths.clone();
+                        selected_paths.sort_by_key(|p| p.len());
+                        if !selected_paths.is_empty() {
+                            let selected = selected_paths[0].clone();
+                            let mut track_hits = vec![root_seg.h0.clone()];
+                            track_hits.extend(selected);
+                            Ok(Track::new(track_hits))
+                        } else {
+                            Ok(Track::new(vec![]))
+                        }
+                    })
+                    .collect();
+
+                let mut tracks: Vec<Track> = dfs_tracks_results.into_iter().collect::<PyResult<Vec<Track>>>()?;
+                if self.clone_ghost_killing {
+                    tracks = self.prune_short_tracks(tracks)?;
+                }
+                Ok(tracks)
+            })
+        })
     }
 }
 

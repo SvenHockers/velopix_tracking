@@ -1,4 +1,6 @@
 use pyo3::prelude::*;
+use rayon::prelude::*;
+use std::sync::{Arc, Mutex};
 use std::collections::{HashMap, HashSet};
 use crate::event_model::event::Event;
 use crate::event_model::hit::Hit;
@@ -216,6 +218,178 @@ impl SearchByTripletTrie {
     
         final_tracks
     }         
+
+    #[pyo3(text_signature = "($self, event)")]
+    pub fn solve_parallel(&self, event: &Event) -> Vec<Track> {
+        pyo3::Python::with_gil(|py| {
+            py.allow_threads(|| {
+                // Precompute module pairs and compatible triplets as in the sequential version.
+                let module_pairs = self.merge_module_pairs(event);
+                let compatible_triplets_trie = self.generate_compatible_triplets(&module_pairs);
+
+                // We'll use an Arc<Mutex<>> to share flagged_hits across threads (chatGPT said this was a good option no clue how it works :))
+                let flagged_hits = Arc::new(Mutex::new(HashSet::<Hit>::new()));
+                let mut forwarding_tracks: Vec<Track> = Vec::new();
+                let mut final_tracks: Vec<Track> = Vec::new();
+                let mut weak_tracks: Vec<Track> = Vec::new();
+
+                if module_pairs.len() < 3 {
+                    return final_tracks;
+                }
+
+                let slice_m0 = &module_pairs[2..];
+                let slice_m1 = &module_pairs[..(module_pairs.len() - 2)];
+                for (m0, m1) in slice_m0.iter().rev().zip(slice_m1.iter().rev()) {
+                    let comp_trip_module = if (m0.module_number as usize) < compatible_triplets_trie.len() {
+                        compatible_triplets_trie[m0.module_number as usize].as_ref()
+                    } else {
+                        None
+                    };
+
+                    let mut forwarding_next_step: Vec<Track> = Vec::new();
+                    let extended_tracks: Vec<Track> = forwarding_tracks
+                        .par_iter()
+                        .filter_map(|t| {
+                            if t.hits.len() < 2 {
+                                return None;
+                            }
+                            let len_hits = t.hits.len();
+                            let h0 = t.hits[len_hits - 2].clone();
+                            let h1 = t.hits[len_hits - 1].clone();
+                            let prev_missed = t.missed_last_module;
+                            
+                            if let Some(comp_module) = comp_trip_module {
+                                if let Some(inner) = comp_module.get(&h0) {
+                                    if let Some((h2, _scatter)) = inner.get(&h1) {
+                                        let mut t_branch = t.clone();
+                                        t_branch.hits.push(h2.clone());
+                                        {
+                                            let mut fh = flagged_hits.lock().unwrap();
+                                            fh.insert(h2.clone());
+                                            if t_branch.hits.len() >= self.min_strong_track_length {
+                                                for hit in t_branch.hits.iter().take(self.min_strong_track_length - 1) {
+                                                    fh.insert(hit.clone());
+                                                }
+                                            }
+                                        }
+                                        t_branch.missed_penultimate_module = prev_missed;
+                                        t_branch.missed_last_module = false;
+                                        return Some(t_branch);
+                                    }
+                                }
+                            }
+                            
+                            {
+                                let mut t_branch2 = t.clone();
+                                let m_index = if m1.module_number > 0 {
+                                    (m1.module_number - 1) as usize
+                                } else {
+                                    0
+                                };
+                                if let Some(module) = event.modules.get(m_index) {
+                                    if let Ok(hits) = module.hits() {
+                                        let mut best_h2 = Hit::new(0.0, 0.0, 0.0, -1, Some(-1), Some(0.0), Some(false));
+                                        let mut best_scatter = self.max_scatter;
+                                        for h2 in hits.iter() {
+                                            let scatter = self.calculate_scatter(&h0, &h1, h2);
+                                            let already_flagged = {
+                                                let fh = flagged_hits.lock().unwrap();
+                                                fh.contains(h2)
+                                            };
+                                            if !already_flagged && scatter < best_scatter {
+                                                best_h2 = h2.clone();
+                                                best_scatter = scatter;
+                                            }
+                                        }
+                                        if best_h2.id != -1 {
+                                            t_branch2.hits.push(best_h2.clone());
+                                            {
+                                                let mut fh = flagged_hits.lock().unwrap();
+                                                fh.insert(best_h2.clone());
+                                                if t_branch2.hits.len() >= self.min_strong_track_length {
+                                                    for hit in t_branch2.hits.iter().take(self.min_strong_track_length - 1) {
+                                                        fh.insert(hit.clone());
+                                                    }
+                                                }
+                                            }
+                                            t_branch2.missed_penultimate_module = prev_missed;
+                                            t_branch2.missed_last_module = false;
+                                            return Some(t_branch2);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            let current_hits_len = t.hits.len();
+                            let mut new_t = t.clone();
+                            new_t.missed_penultimate_module = prev_missed;
+                            new_t.missed_last_module = true;
+                            Some(new_t)
+                        })
+                        .collect();
+
+                    let seeding_tracks: Vec<Track> = if let Some(comp_module) = comp_trip_module {
+                        comp_module
+                            .par_iter()
+                            .map(|(h0, inner_map)| {
+                                let mut best_h1 = Hit::new(0.0, 0.0, 0.0, -1, Some(-1), Some(0.0), Some(false));
+                                let mut best_h2 = Hit::new(0.0, 0.0, 0.0, -1, Some(-1), Some(0.0), Some(false));
+                                let mut best_scatter = self.max_scatter;
+                                for (h1, &(ref h2, scatter)) in inner_map.iter() {
+                                    let fh = flagged_hits.lock().unwrap();
+                                    if !fh.contains(h0) && !fh.contains(h1) && !fh.contains(h2) && scatter < best_scatter {
+                                        best_scatter = scatter;
+                                        best_h1 = h1.clone();
+                                        best_h2 = h2.clone();
+                                    }
+                                }
+                                if best_scatter < self.max_scatter {
+                                    Track {
+                                        hits: vec![h0.clone(), best_h1, best_h2],
+                                        missed_last_module: false,
+                                        missed_penultimate_module: false,
+                                    }
+                                } else {
+                                    Track {
+                                        hits: Vec::new(),
+                                        missed_last_module: false,
+                                        missed_penultimate_module: false,
+                                    }
+                                }
+                            })
+                            .filter(|t| !t.hits.is_empty())
+                            .collect()
+                    } else {
+                        Vec::new()
+                    };
+
+                    forwarding_next_step = extended_tracks;
+                    forwarding_next_step.extend(seeding_tracks);
+                    forwarding_tracks = forwarding_next_step;
+                } 
+
+                for t in forwarding_tracks.into_iter() {
+                    if t.hits.len() >= self.min_strong_track_length {
+                        final_tracks.push(t);
+                    } else {
+                        weak_tracks.push(t);
+                    }
+                }
+                {
+                    let fh = flagged_hits.lock().unwrap();
+                    for t in weak_tracks.into_iter() {
+                        if !fh.contains(&t.hits[0])
+                            && !fh.contains(&t.hits[1])
+                            && !fh.contains(&t.hits[2])
+                        {
+                            final_tracks.push(t);
+                        }
+                    }
+                }
+                final_tracks
+            })
+        })
+    }
 }
 
 // Private helper methods not exposed to Python.

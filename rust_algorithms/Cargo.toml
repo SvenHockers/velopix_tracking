@@ -1,9 +1,10 @@
 [package]
 name = "velopix_tracking"
 authors = ["Sven Hockers"]
-version = "0.5.0"
+version = "0.5.5"
 edition = "2021"
 build = "build.rs"
+exclude = ["src/validator/*.rs"]
 
 [lib]
 name = "velopix_tracking"
@@ -11,5 +12,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.18", features = ["extension-module"] }
+rayon = "1.5"
 ordered-float = "3.6"
 itertools = "0.10.5"
