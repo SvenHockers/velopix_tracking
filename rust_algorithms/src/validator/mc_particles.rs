@@ -3,7 +3,6 @@ use ordered_float::OrderedFloat;
 use std::hash::{Hash, Hasher};
 use crate::event_model::hit::Hit; 
 
-// MCParticle used in validation.
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct MCParticle {

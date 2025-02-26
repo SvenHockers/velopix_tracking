@@ -83,14 +83,11 @@ pub fn validate_efficiency(
 
 #[pyfunction]
 pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> PyResult<()> {
-    // Acquire the Python GIL.
     let gil = Python::acquire_gil();
     let py = gil.python();
 
-    // Build ValidatorEvent objects.
     let mut tracking_data = Vec::new();
     for dict in py_events.iter() {
-        // Extract required fields.
         let module_prefix_sum: Vec<usize> = dict.get_item("module_prefix_sum").unwrap().extract()?;
         let hit_xs: Vec<f64> = dict.get_item("x").unwrap().extract()?;
         let hit_ys: Vec<f64> = dict.get_item("y").unwrap().extract()?;
@@ -99,9 +96,8 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
         for (i, (&x, (&y, &z))) in hit_xs.iter().zip(hit_ys.iter().zip(hit_zs.iter())).enumerate() {
             hits.push(Hit::new(x, y, z, i as i32, None, None, None));
         }
-        // Parse montecarlo if present.
         let (particles, mcp_to_hits) = if dict.contains("montecarlo")? {
-            // parse_montecarlo returns (Vec<MCParticle>, HashMap<MCParticle, Vec<Hit>>)
+            // parse_montecarlo -> (Vec<MCParticle>, HashMap<MCParticle, Vec<Hit>>)
             parse_montecarlo(py, dict, &hits)?
         } else {
             (Vec::new(), HashMap::new())
@@ -119,7 +115,6 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
         tracking_data.push(event);
     }
 
-    // Initialize summary counters.
     let mut n_tracks = 0;
     let mut n_allghosts = 0;
     let mut avg_ghost_rate = 0.0;
@@ -142,7 +137,6 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
             n_allghosts += nghosts;
             avg_ghost_rate += grate;
         }
-        // Define condition functions.
         let cond_velo: for<'a> fn(&'a MCParticle) -> bool =
             |p: &MCParticle| p.isvelo && (p.pid.abs() != 11);
         let cond_long: for<'a> fn(&'a MCParticle) -> bool =
@@ -158,7 +152,6 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
         let cond_long_fromb5: for<'a> fn(&'a MCParticle) -> bool =
             |p: &MCParticle| p.islong && p.over5 && p.fromb && (p.pid.abs() != 11);
 
-        // Update efficiency objects.
         eff_velo = update_efficiencies(eff_velo, event, tracks, &weights, "velo", cond_velo);
         eff_long = update_efficiencies(eff_long, event, tracks, &weights, "long", cond_long);
         eff_long5 = update_efficiencies(eff_long5, event, tracks, &weights, "long>5GeV", cond_long5);
@@ -168,7 +161,6 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
         eff_long_fromb5 = update_efficiencies(eff_long_fromb5, event, tracks, &weights, "long_fromb>5GeV", cond_long_fromb5);
     }
 
-    // Print only summary statistics.
     let nevents = tracking_data.len();
     if nevents > 0 {
         println!(
@@ -199,11 +191,9 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
     use pyo3::types::PyDict;
     use pyo3::prelude::*;
     
-    // Acquire the Python GIL.
     let gil = Python::acquire_gil();
     let py = gil.python();
     
-    // Build ValidatorEvent objects.
     let mut tracking_data = Vec::new();
     for dict in py_events.iter() {
         let module_prefix_sum: Vec<usize> = dict.get_item("module_prefix_sum").unwrap().extract()?;
@@ -214,7 +204,7 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
         for (i, (&x, (&y, &z))) in hit_xs.iter().zip(hit_ys.iter().zip(hit_zs.iter())).enumerate() {
             hits.push(Hit::new(x, y, z, i as i32, None, None, None));
         }
-        // If "montecarlo" exists, parse it to get particles and mcp_to_hits.
+        // If "montecarlo" exists, parse to get particles and mcp_to_hits.
         let (particles, mcp_to_hits) = if dict.contains("montecarlo")? {
             parse_montecarlo(py, dict, &hits)?
         } else {
@@ -233,14 +223,11 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
         tracking_data.push(event);
     }
     
-    // Overall counters.
     let mut total_tracks = 0;
     let mut total_ghosts = 0;
     let mut total_ghost_rate = 0.0;
     let n_events = tracking_data.len();
     
-    // Define categories and condition functions.
-    // Note: Each closure is explicitly cast to a function pointer.
     let cond_map: HashMap<&str, for<'a> fn(&'a MCParticle) -> bool> = [
         ("velo", (|p: &MCParticle| p.isvelo && (p.pid.abs() != 11)) as for<'a> fn(&'a MCParticle) -> bool),
         ("long", (|p: &MCParticle| p.islong && (p.pid.abs() != 11)) as for<'a> fn(&'a MCParticle) -> bool),
@@ -251,10 +238,9 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
         ("long_fromb>5GeV", (|p: &MCParticle| p.islong && p.over5 && p.fromb && (p.pid.abs() != 11)) as for<'a> fn(&'a MCParticle) -> bool),
     ].iter().cloned().collect();
     
-    // We'll store per-category Efficiency objects here.
     let mut eff_map: HashMap<String, Efficiency> = HashMap::new();
     
-    // Process each event.
+    // Process event.
     for (event, tracks) in tracking_data.iter().zip(py_tracks.iter()) {
         total_tracks += tracks.len();
         let weights = comp_weights(tracks, event)
@@ -266,7 +252,6 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
             total_ghost_rate += grate;
         }
     
-        // Update Efficiency for each category.
         for (cat, cond) in &cond_map {
             let current_eff = eff_map.remove(&cat.to_string());
             let new_eff = update_efficiencies(current_eff, event, tracks, &weights, cat, *cond);
@@ -276,7 +261,6 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
         }
     }
     
-    // Calculate overall ghost rates.
     let overall_ghost_rate = if total_tracks > 0 {
         100.0 * total_ghosts as f64 / total_tracks as f64
     } else { 0.0 };
@@ -284,14 +268,12 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
         100.0 * total_ghost_rate / n_events as f64
     } else { 0.0 };
     
-    // Build the summary dictionary.
     let summary = PyDict::new(py);
     summary.set_item("total_tracks", total_tracks)?;
     summary.set_item("total_ghosts", total_ghosts)?;
     summary.set_item("overall_ghost_rate", overall_ghost_rate)?;
     summary.set_item("event_avg_ghost_rate", event_avg_ghost_rate)?;
     
-    // Build per-category summaries.
     let mut categories_summary = Vec::new();
     for (cat, eff) in &eff_map {
         let clone_percentage = if eff.n_reco > 0 {

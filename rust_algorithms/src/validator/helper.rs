@@ -10,12 +10,6 @@ use crate::validator::efficientcy::Efficiency;
 use crate::validator::mc_particles::MCParticle;
 use crate::validator::event::ValidatorEvent;
 
-/// Compute the weight matrix w(t, p).
-/// For each track and each particle, the weight is the fraction of hits on the track that are attributed to that particle.
-///
-/// # Arguments
-/// * `tracks` - A slice of reconstructed tracks.
-/// * `event` - The event data which must contain a `particles` field and optionally a `hit_to_mcp` mapping.
 pub fn comp_weights(
     tracks: &[Track],
     event: &ValidatorEvent,
@@ -25,23 +19,19 @@ pub fn comp_weights(
     if nparticles == 0 {
         return Ok(weights);
     }
-    // Ensure the hit_to_mcp mapping is present.
     let hit_to_mcp = event.hit_to_mcp.as_ref().ok_or("Error: hit_to_mcp mapping is missing")?;
     
-    // Precompute a mapping from hit id to its associated MCParticles.
     let mut hit_map: HashMap<i32, &Vec<MCParticle>> = HashMap::new();
     for (hit, mcps) in hit_to_mcp.iter() {
         hit_map.insert(hit.id, mcps);
     }
     
-    // For each track, compute the fraction of hits associated with each particle.
     for (i, track) in tracks.iter().enumerate() {
         let track_hits = &track.hits;
         let nhits = track_hits.len();
         if nhits < 2 {
             continue;
         }
-        // For each particle, count how many hits in the track are associated with it.
         for (j, particle) in event.particles.as_ref().unwrap().iter().enumerate() {
             let mut nhits_from_p = 0;
             for h in track_hits {
@@ -59,12 +49,6 @@ pub fn comp_weights(
     Ok(weights)
 }
 
-/// Compute hit purity maps for tracks and particles.
-/// Returns two hash maps:
-///  - t2p: mapping from each track to a tuple (max_weight, Option<MCParticle>).
-///  - p2t: mapping from each MCParticle to a tuple (max_weight, Option<Track>).
-///
-/// A track is associated with a particle only if the maximum weight in its row is greater than 0.7.
 pub fn hit_purity(
     tracks: &[Track],
     particles: &[MCParticle],
@@ -80,7 +64,6 @@ where
     let mut t2p: HashMap<Track, (f64, Option<MCParticle>)> = HashMap::new();
     let mut p2t: HashMap<MCParticle, (f64, Option<Track>)> = HashMap::new();
 
-    // For each track, find the maximum weight and corresponding particle.
     for (i, track) in tracks.iter().enumerate() {
         let row = &weights[i];
         if let Some((max_idx, &max_w)) = row
@@ -96,7 +79,6 @@ where
         }
     }
 
-    // For each particle, iterate over tracks to get the maximum weight for that particle.
     for (j, particle) in particles.iter().enumerate() {
         let mut max_w = 0.0;
         let mut max_track: Option<Track> = None;
@@ -117,8 +99,6 @@ where
     (t2p, p2t)
 }
 
-/// Return the ghost rate and ghost count given a track-to-particle mapping.
-/// Ghost tracks are those with no associated particle.
 pub fn ghost_rate(
     t2p: &HashMap<Track, (f64, Option<MCParticle>)>,
 ) -> (f64, usize) {
@@ -132,8 +112,6 @@ pub fn ghost_rate(
     (rate, ghosts)
 }
 
-/// Returns a vector of tracks that are considered reconstructed.
-/// A track is reconstructed if it has an associated particle.
 pub fn reconstructed(
     p2t: &HashMap<MCParticle, (f64, Option<Track>)>,
 ) -> Vec<Track> {
@@ -142,8 +120,6 @@ pub fn reconstructed(
         .collect()
 }
 
-/// Returns a HashMap mapping each MCParticle (that has more than one associated track)
-/// to the list of tracks associated with it.
 pub fn clones(
     t2p: HashMap<Track, (f64, Option<MCParticle>)>,
 ) -> HashMap<MCParticle, Vec<Track>>
@@ -160,34 +136,27 @@ where
                 .push(track);
         }
     }
-    // Only keep particles with more than one associated track (i.e. clones).
     particle_to_tracks
         .into_iter()
         .filter(|(_, tracks)| tracks.len() > 1)
         .collect()
 }
 
-/// Compute hit efficiency for tracks that are associated with a particle.
-/// The efficiency is defined as the ratio of hits on the track from the associated particle
-/// to the total hits from that particle (as given by the event's mcp_to_hits map).
 pub fn hit_efficiency(
     t2p: &HashMap<Track, (f64, Option<MCParticle>)>,
     event: &ValidatorEvent,
 ) -> HashMap<Track, f64> {
     let mut hit_eff: HashMap<Track, f64> = HashMap::new();
 
-    // Ensure we have the necessary mappings from the event.
     if let (Some(ref hit_to_mcp), Some(ref mcp_to_hits)) = (&event.hit_to_mcp, &event.mcp_to_hits) {
         for (track, &(_w, ref opt_particle)) in t2p.iter() {
             if let Some(ref particle) = opt_particle {
-                // Count how many hits on the track are from the associated particle.
                 let hits_from_particle = track.hits.iter().filter(|hit| {
                     hit_to_mcp.get(*hit)
                         .map(|mcps| mcps.iter().any(|p| p == particle))
                         .unwrap_or(false)
                 }).count();
 
-                // Total number of hits contributed by the particle (from mcp_to_hits).
                 let total_hits = mcp_to_hits.get(particle)
                     .map(|v| v.len())
                     .unwrap_or(0);
@@ -200,21 +169,6 @@ pub fn hit_efficiency(
     hit_eff
 }
 
-/// Update efficiencies for a given event and set of tracks.
-///
-/// This mirrors the Python logic by:
-///  - Filtering the particles based on `cond`
-///  - Slicing the weights matrix to only include the filtered particles
-///  - Computing the hit purity maps
-///  - Updating an existing Efficiency instance or creating a new one.
-///
-/// # Arguments
-/// * `eff` - Optional current Efficiency instance.
-/// * `event` - The event data.
-/// * `tracks` - The list of tracks for this event.
-/// * `weights` - The full weight matrix (each row corresponds to a track, each column to a particle).
-/// * `label` - A label for this Efficiency instance.
-/// * `cond` - A function that returns true for particles that should be considered.
 pub fn update_efficiencies(
     mut eff: Option<Efficiency>,
     event: &ValidatorEvent,
@@ -271,12 +225,10 @@ pub fn parse_montecarlo(py: Python, dict: &PyDict, hits: &[Hit])
         .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyKeyError, _>("montecarlo key missing"))?
         .downcast::<PyDict>()?;
     
-    // Extract the description list (field names).
     let description: Vec<String> = mc_obj.get_item("description")
         .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyKeyError, _>("description key missing in montecarlo"))?
         .extract()?;
     
-    // Extract the particles data: each particle is represented as a list.
     let particles_data: Vec<Vec<PyObject>> = mc_obj.get_item("particles")
         .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyKeyError, _>("particles key missing in montecarlo"))?
         .extract()?;
@@ -284,10 +236,8 @@ pub fn parse_montecarlo(py: Python, dict: &PyDict, hits: &[Hit])
     let mut particles = Vec::new();
     let mut mcp_to_hits = HashMap::new();
     
-    // Iterate over each particle record.
     for p in particles_data.into_iter() {
         let mut d: HashMap<String, PyObject> = HashMap::new();
-        // Build a mapping from field name to value.
         for (i, key) in description.iter().enumerate() {
             let value = p.get(i)
                 .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyIndexError, _>("Particle data missing element"))?
@@ -295,7 +245,6 @@ pub fn parse_montecarlo(py: Python, dict: &PyDict, hits: &[Hit])
             d.insert(key.clone(), value);
         }
         
-        // Extract numeric fields.
         let pkey: u64 = d.get("key").and_then(|obj| obj.extract(py).ok()).unwrap_or(0);
         let pid: i32 = d.get("pid").and_then(|obj| obj.extract(py).ok()).unwrap_or(0);
         let p_val: f64 = d.get("p").and_then(|obj| obj.extract(py).ok()).unwrap_or(0.0);
@@ -304,7 +253,6 @@ pub fn parse_montecarlo(py: Python, dict: &PyDict, hits: &[Hit])
         let phi: f64 = d.get("phi").and_then(|obj| obj.extract(py).ok()).unwrap_or(0.0);
         let charge: i32 = d.get("charge").and_then(|obj| obj.extract(py).ok()).unwrap_or(0);
         
-        // Extract the hit indices for this particle.
         let hit_indices: Vec<usize> = d.get("hits")
             .and_then(|obj| obj.extract(py).ok())
             .unwrap_or(vec![]);
@@ -313,11 +261,9 @@ pub fn parse_montecarlo(py: Python, dict: &PyDict, hits: &[Hit])
             .filter_map(|&i| hits.get(i).cloned())
             .collect();
         
-        // Create a new MCParticle (this sets default flags).
         let mut mcp = MCParticle::new(pkey, pid, p_val, pt, eta, phi, charge, trackhits.clone());
         
-        // Set boolean flags by extracting integer values and converting them.
-        // (Treat nonzero as true.)
+        // Treat nonzero as true
         mcp.islong = d.get("isLong")
             .and_then(|obj| obj.extract::<i32>(py).ok())
             .map(|v| v != 0)
@@ -353,7 +299,6 @@ pub fn parse_montecarlo(py: Python, dict: &PyDict, hits: &[Hit])
         // over5 is computed from p_val: true if absolute p > 5000.
         mcp.over5 = p_val.abs() > 5000.0;
         
-        // Insert the MCParticle and its associated hits.
         mcp_to_hits.insert(mcp.clone(), trackhits);
         particles.push(mcp);
     }

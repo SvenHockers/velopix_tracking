@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::event_model::hit::Hit;
 use crate::validator::mc_particles::MCParticle;
 
-/// A SOA datastructure for events (similar to the original Python validator_event).
 #[pyclass]
 #[derive(Clone, Debug)]
 pub struct ValidatorEvent {
@@ -17,17 +16,13 @@ pub struct ValidatorEvent {
     pub hit_zs: Vec<f64>,
     #[pyo3(get)]
     pub hits: Vec<Hit>,
-    /// Mapping from MCParticle to its hits.
     pub mcp_to_hits: Option<HashMap<MCParticle, Vec<Hit>>>,
-    /// Mapping from Hit to associated MCParticles.
     pub hit_to_mcp: Option<HashMap<Hit, Vec<MCParticle>>>,
-    /// The list of MCParticles (extracted from mcp_to_hits keys or provided explicitly).
     pub particles: Option<Vec<MCParticle>>,
 }
 
 #[pymethods]
 impl ValidatorEvent {
-    /// New now accepts an optional `particles` vector.
     #[new]
     pub fn new(
         module_prefix_sum: Vec<usize>,
@@ -77,7 +72,6 @@ impl ValidatorEvent {
         }
     }
 
-    /// Retrieve a hit by its index.
     pub fn get_hit(&self, hit_id: usize) -> Option<Hit> {
         self.hits.get(hit_id).cloned()
     }

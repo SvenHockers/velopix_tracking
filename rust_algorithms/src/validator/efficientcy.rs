@@ -15,14 +15,12 @@ pub struct Efficiency {
     pub n_particles: usize,
     #[pyo3(get)]
     pub n_reco: usize,
-    // Changed from usize to f64 to accumulate fractional purity values.
     #[pyo3(get)]
     pub n_pure: f64,
     #[pyo3(get)]
     pub n_clones: usize,
     #[pyo3(get)]
     pub n_events: usize,
-    // Changed from usize to f64 to accumulate fractional hit efficiency values.
     #[pyo3(get)]
     pub n_heff: f64,
     #[pyo3(get)]
@@ -40,7 +38,6 @@ pub struct Efficiency {
 }
 
 impl Efficiency {
-    /// Internal method (not exposed to Python) that updates efficiency information.
     pub fn add_event_internal(
         &mut self,
         t2p: &HashMap<Track, (f64, Option<MCParticle>)>,
@@ -50,34 +47,27 @@ impl Efficiency {
     ) {
         self.n_events += 1;
         self.n_particles += particles.len();
-
-        // Update number of reconstructed tracks.
         let reco_tracks = helper::reconstructed(p2t);
         self.n_reco += reco_tracks.len();
 
-        // Update average reconstruction efficiency.
         if self.n_particles > 0 {
             self.avg_recoeff = 100.0 * (self.n_reco as f64 / self.n_particles as f64);
         } else {
             self.avg_recoeff = 0.0;
         }
 
-        // Update clones count.
         let clones_map = helper::clones(t2p.clone());
         let clones_count: usize = clones_map.values()
             .map(|v| v.len().saturating_sub(1))
             .sum();
         self.n_clones += clones_count;
 
-        // Calculate hit efficiency.
         let hit_eff = helper::hit_efficiency(t2p, event);
 
-        // Calculate purities (only include tracks that have an associated particle).
         let purities: Vec<f64> = t2p.values().filter_map(|&(w, ref opt)| {
             if opt.is_some() { Some(w) } else { None }
         }).collect();
 
-        // Accumulate the sums as f64 (without casting).
         self.n_pure += purities.iter().sum::<f64>();
         self.n_heff += hit_eff.values().sum::<f64>();
         self.n_hits += hit_eff.len();
@@ -106,17 +96,16 @@ impl Efficiency {
 
 #[pymethods]
 impl Efficiency {
-    /// Python-facing constructor. Accepts only a label.
     #[new]
     pub fn new(label: String) -> Self {
         Efficiency {
             label,
             n_particles: 0,
             n_reco: 0,
-            n_pure: 0.0,       // initialize as f64
+            n_pure: 0.0,      
             n_clones: 0,
             n_events: 0,
-            n_heff: 0.0,       // initialize as f64
+            n_heff: 0.0,  
             n_hits: 0,
             recoeffT: 0.0,
             purityT: 0.0,
@@ -126,10 +115,7 @@ impl Efficiency {
         }
     }
 
-    /// Python-friendly wrapper to update efficiency from event data.
-    ///
-    /// The parameters `t2p_data` and `p2t_data` are vectors of tuples that can be converted from Python.
-    /// Internally they are converted to HashMaps and then passed to the internal update logic.
+
     pub fn update_from_py(
         &mut self,
         t2p_data: Vec<(Track, (f64, Option<MCParticle>))>,
