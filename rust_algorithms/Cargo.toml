@@ -1,10 +1,9 @@
 [package]
 name = "velopix_tracking"
 authors = ["Sven Hockers"]
-version = "0.5.5"
+version = "0.7.5"
 edition = "2021"
 build = "build.rs"
-exclude = ["src/validator/*.rs"]
 
 [lib]
 name = "velopix_tracking"

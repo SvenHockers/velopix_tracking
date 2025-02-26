@@ -288,7 +288,7 @@ checksum = "e1766d682d402817b5ac4490b3c3002d91dfa0d22812f341609f97b08757359c"
 
 [[package]]
 name = "velopix_tracking"
-version = "0.5.5"
+version = "0.7.5"
 dependencies = [
  "itertools",
  "ordered-float",
