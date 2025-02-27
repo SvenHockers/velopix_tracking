@@ -208,7 +208,7 @@ print(tracks)
 
 ---
 
-### **🔄 Parallel Processing with Rust (In development)**
+### **🔄 Parallel Processing with Rust**
 Rust’s **Rayon** crate enables **parallelized track processing** for large-scale datasets.  
 Example implementation:
 
@@ -233,12 +233,10 @@ By leveraging multi-threading, we achieve **significant speedup** in track proce
 ### ✅ **Summary**
 | Feature | Python Implementation | Rust Implementation |
 |---------|---------------------|---------------------|
-| **Execution Speed** | 🚀 Fast | ⚡ 10x Faster |
+| **Execution Speed** | 1x |  15x |
 | **Memory Efficiency** | Moderate | Optimized |
 | **Parallelization** | Limited | Full Multi-threading |
 | **Ease of Use** | Native | Python-compatible |
-
-The Rust-based implementation offers a **10x speed improvement** while being fully **integrated with Python** for easy usage.
 
 ---
 
