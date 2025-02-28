@@ -176,6 +176,7 @@ pub fn update_efficiencies(
     weights: &[Vec<f64>],
     label: &str,
     cond: for<'a> fn(&'a MCParticle) -> bool,
+    verbose: bool
 ) -> Option<Efficiency>
 where
     Track: Clone + std::hash::Hash + Eq,
@@ -189,8 +190,10 @@ where
         .filter_map(|(i, p)| if cond(p) { Some((i, p.clone())) } else { None })
         .collect();
     
-    if filtered.is_empty() {
+    if filtered.is_empty() && verbose {
         println!("update_efficiencies: No particles match condition for '{}'", label);
+        return eff;
+    } else if filtered.is_empty() {
         return eff;
     }
     

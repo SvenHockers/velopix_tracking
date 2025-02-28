@@ -70,7 +70,7 @@ pub fn validate_efficiency(
             _ => |_| false,
         };
 
-        eff = update_efficiencies(eff, event, tracks, &weights, particle_type, cond);
+        eff = update_efficiencies(eff, event, tracks, &weights, particle_type, cond, true);
     }
 
     if let Some(eff_obj) = eff {
@@ -152,13 +152,13 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
         let cond_long_fromb5: for<'a> fn(&'a MCParticle) -> bool =
             |p: &MCParticle| p.islong && p.over5 && p.fromb && (p.pid.abs() != 11);
 
-        eff_velo = update_efficiencies(eff_velo, event, tracks, &weights, "velo", cond_velo);
-        eff_long = update_efficiencies(eff_long, event, tracks, &weights, "long", cond_long);
-        eff_long5 = update_efficiencies(eff_long5, event, tracks, &weights, "long>5GeV", cond_long5);
-        eff_long_strange = update_efficiencies(eff_long_strange, event, tracks, &weights, "long_strange", cond_long_strange);
-        eff_long_strange5 = update_efficiencies(eff_long_strange5, event, tracks, &weights, "long_strange>5GeV", cond_long_strange5);
-        eff_long_fromb = update_efficiencies(eff_long_fromb, event, tracks, &weights, "long_fromb", cond_long_fromb);
-        eff_long_fromb5 = update_efficiencies(eff_long_fromb5, event, tracks, &weights, "long_fromb>5GeV", cond_long_fromb5);
+        eff_velo = update_efficiencies(eff_velo, event, tracks, &weights, "velo", cond_velo, true);
+        eff_long = update_efficiencies(eff_long, event, tracks, &weights, "long", cond_long, true);
+        eff_long5 = update_efficiencies(eff_long5, event, tracks, &weights, "long>5GeV", cond_long5, true);
+        eff_long_strange = update_efficiencies(eff_long_strange, event, tracks, &weights, "long_strange", cond_long_strange, true);
+        eff_long_strange5 = update_efficiencies(eff_long_strange5, event, tracks, &weights, "long_strange>5GeV", cond_long_strange5, true);
+        eff_long_fromb = update_efficiencies(eff_long_fromb, event, tracks, &weights, "long_fromb", cond_long_fromb, true), true;
+        eff_long_fromb5 = update_efficiencies(eff_long_fromb5, event, tracks, &weights, "long_fromb>5GeV", cond_long_fromb5, true);
     }
 
     let nevents = tracking_data.len();
@@ -186,7 +186,7 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
 
 // writes data to json object
 #[pyfunction]
-pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> PyResult<PyObject> {
+pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>, verbose: bool) -> PyResult<PyObject> {
     use std::collections::HashMap;
     use pyo3::types::PyDict;
     use pyo3::prelude::*;
@@ -254,7 +254,7 @@ pub fn validate_to_json(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> 
     
         for (cat, cond) in &cond_map {
             let current_eff = eff_map.remove(&cat.to_string());
-            let new_eff = update_efficiencies(current_eff, event, tracks, &weights, cat, *cond);
+            let new_eff = update_efficiencies(current_eff, event, tracks, &weights, cat, *cond, verbose);
             if let Some(e) = new_eff {
                 eff_map.insert(cat.to_string(), e);
             }
