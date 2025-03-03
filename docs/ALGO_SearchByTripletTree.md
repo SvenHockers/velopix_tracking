@@ -2,7 +2,7 @@
 
 ## 📌 Overview
 
-The final algorithm proceeds in several stages:
+The search by triplet tree algorithm proceeds in several stages:
 
 1. **Module Merging**: Merge detector modules two-by-two to simplify the hit space.
 2. **Scatter Calculation**: For three hits $h_0, h_1, h_2$, compute a scatter value measuring the deviation of $h_2$ from the extrapolated line defined by $h_0$ and $h_1$.
@@ -13,6 +13,8 @@ The final algorithm proceeds in several stages:
    - **Seeding**: Start new tracks from candidate triplets.
 6. **Track Classification and Pruning**: Classify tracks into strong and weak candidates based on their length, and prune duplicates or weak tracks.
 7. **Validation**: Validate the reconstructed tracks using an external validation module.
+
+Also see the [full article](https://arxiv.org/pdf/2207.03936) describing the operation of this algorihtm
 
 ---
 
