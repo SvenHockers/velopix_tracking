@@ -7,7 +7,7 @@ use crate::validator::mc_particles::MCParticle;
 use crate::validator::helper;
 
 #[pyclass]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Efficiency {
     #[pyo3(get)]
     pub label: String,
