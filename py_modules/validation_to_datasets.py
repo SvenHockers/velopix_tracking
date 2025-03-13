@@ -83,9 +83,7 @@ def output_distributions(results: List[Dict[str, Any]]) -> Tuple[pd.DataFrame, p
     overall_rows = []
     category_rows = []
     distributions_rows = []
-    
     for run_id, res in enumerate(results):
-        distributions = [] # init/empty event_row for each row
         # extract solver parameters if available.
         params = res.get('parameters', {})
         overall_row = {
@@ -109,23 +107,53 @@ def output_distributions(results: List[Dict[str, Any]]) -> Tuple[pd.DataFrame, p
 
         # here we capture individual event results, calculate statistical data regarding it and store it to a row -> this is done to reduce the data overhead
         events = res.get('events', [])
-        df_events = pd.DataFrame(events)
-        summary = {'run_id'} = run_id
-        for col in df_events.columns:
-            summary[f"{col}_count"] = df_events[col].count()
-            summary[f"{col}_mean"] = df_events[col].mean()
-            summary[f"{col}_std"] = df_events[col].std()
-            summary[f"{col}_min"] = df_events[col].min()
-            summary[f"{col}_max"] = df_events[col].max()
-            summary[f"{col}_median"] = df_events[col].median()
-            q25 = df_events[col].quantile(0.25)
-            q75 = df_events[col].quantile(0.75)
-            summary[f"{col}_q25"] = q25
-            summary[f"{col}_q75"] = q75
-            summary[f"{col}_iqr"] = q75 - q25
-            summary[f"{col}_skew"] = df_events[col].skew()
-            summary[f"{col}_kurtosis"] = df_events[col].kurtosis()
-        distributions_rows.append(summary)
+        rows = []
+        for event_id, event_list in events.items():
+            for entry in event_list:
+                entry_copy = entry.copy()
+                entry_copy["event_id"] = int(event_id)
+                rows.append(entry_copy)
+        df_events = pd.DataFrame(rows)
+        df_events["label"] = df_events['label'].astype(str) # for some weird reason this is an object so have to cast it to str instead 
+        dist_summary = {}
+
+        if not df_events.empty:
+            if 'label' in df_events.columns:
+                for label, group in df_events.groupby('label'):
+                    numeric_cols = group.select_dtypes(include=['number']).columns #ensure we only use numeric columns
+                    for col in numeric_cols:
+                        dist_summary[f"{label}_{col}_mean"] = group[col].mean()
+                        dist_summary[f"{label}_{col}_std"] = group[col].std()
+                        dist_summary[f"{label}_{col}_min"] = group[col].min()
+                        dist_summary[f"{label}_{col}_max"] = group[col].max()
+                        dist_summary[f"{label}_{col}_median"] = group[col].median()
+                        q25 = group[col].quantile(0.25)
+                        q75 = group[col].quantile(0.75)
+                        dist_summary[f"{label}_{col}_q25"] = q25
+                        dist_summary[f"{label}_{col}_q75"] = q75
+                        dist_summary[f"{label}_{col}_iqr"] = q75 - q25
+                        dist_summary[f"{label}_{col}_skew"] = group[col].skew()
+                        dist_summary[f"{label}_{col}_kurtosis"] = group[col].kurtosis()
+            else:
+                # Fallback: if there is no label column, compute overall statistics per numeric column. May consider using a different fallback
+                print("Fallback triggered!")
+                numeric_cols = df_events.select_dtypes(include=['number']).columns
+                for col in numeric_cols:
+                    dist_summary[f"{col}_mean"] = df_events[col].mean()
+                    dist_summary[f"{col}_std"] = df_events[col].std()
+                    dist_summary[f"{col}_min"] = df_events[col].min()
+                    dist_summary[f"{col}_max"] = df_events[col].max()
+                    dist_summary[f"{col}_median"] = df_events[col].median()
+                    q25 = df_events[col].quantile(0.25)
+                    q75 = df_events[col].quantile(0.75)
+                    dist_summary[f"{col}_q25"] = q25
+                    dist_summary[f"{col}_q75"] = q75
+                    dist_summary[f"{col}_iqr"] = q75 - q25
+                    dist_summary[f"{col}_skew"] = df_events[col].skew()
+                    dist_summary[f"{col}_kurtosis"] = df_events[col].kurtosis()
+        dist_summary["number_events"] = df_events["event_id"].max()
+        dist_summary["run_id"] = run_id
+        distributions_rows.append(dist_summary)
         
     overall_df = pd.DataFrame(overall_rows)
     category_df = pd.DataFrame(category_rows)
