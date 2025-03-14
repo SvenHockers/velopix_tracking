@@ -6,11 +6,13 @@ from velopix_tracking import Event, TrackFollowing, GraphDFS, SearchByTripletTri
                             validate_print, validate_to_json_nested, validate_to_json
 
 from typing import Any, Dict, List, Optional, Union, Tuple
+import warnings
 
 class PipelineBase(ABC):
-    def __init__(self, events: List[Dict[str, Any]]) -> None:
+    def __init__(self, events: List[Dict[str, Any]], parameter_map: List[Dict[str, Any]], intra_node: bool) -> None:
         self.json_events = events
-
+        self.nested = intra_node
+        self.parameters = parameter_map
         self.events = []
         for event in events:
             self.events.append(Event(event))
@@ -19,16 +21,18 @@ class PipelineBase(ABC):
     def model(map) -> Union[TrackFollowing, GraphDFS, SearchByTripletTrie]:
         pass
 
-    def run(self, parameter_map: List[Dict[str, Any]], intra_node: bool) -> None:
+    def run(self, overwrite: bool) -> None:
         # here I should include a warning if self.results != empty break to prevent loss of data
-        self.nested = intra_node
+        if self.results and not overwrite:
+            warnings.warn("Overwriting results. This will cause a loss of data!", UserWarning)
+            return
         self.results =  []
-        for pMap in parameter_map:
+        for pMap in self.parameters:
             model = self.model(pMap)
             tstart = time.strptime()
             self.tracks = model.solve_parallel(self.events)
             runtime = time.strptime() - tstart 
-            if intra_node:
+            if self.intra_node:
                 valMap = validate_to_json_nested(self.json_events, self.tracks)
             else:
                 valMap = validate_to_json(self.json_events, self.tracks)
@@ -43,6 +47,27 @@ class PipelineBase(ABC):
     def get_results(self) -> List[Dict[str, Any]]:
         return self.results
     
+    def calculate_db_estimate(self) -> None:
+        Cv = {
+            "tracks": 8.57,
+            "validation": 3.64,
+            "overall_db": 3.68,
+            "category_db": 22.24,
+            "event_db": 64.04 
+        }
+        Ne = len(self.events)
+        Nr = len(self.parameters)
+        size_bytes = Ne * Nr * (Cv.get("overall_db") + Cv.get("category_db") + Cv.get("event_db"))
+        units = ["B", "KB", "MB", "GB", "TB"]
+        size = size_bytes
+        unit = "B"
+        for u in units: # auto scale for best scale
+            if size < 1024:
+                unit = u
+                break
+            size /= 1024  
+        print(f"Estimated database size: {size:.2f} {unit}")
+
     # note this print func is computationally heavy
     def print_validation(self) -> None:
         validate_print(self.json_events, self.tracks)
