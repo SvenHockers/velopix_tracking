@@ -13,7 +13,7 @@ if [[ "$os" == "Darwin" || "$os" == "Linux" ]]; then
     activate_script="$venv_dir/bin/activate"
     python_cmd="python3"
 else
-    # Assume Windows (Git Bash) if not Darwin/Linux
+    # assume Windows (Git Bash)
     activate_script="$venv_dir/Scripts/activate"
     python_cmd="python"
 fi
@@ -25,18 +25,22 @@ if [ "$action" == "install" ]; then
         rm -rf "$venv_dir"
     fi
 
-    # install rust 
-    if [ "$os" == "Darwin" ]; then
-        brew install rust
-    else
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-        if [ -f "$HOME/.cargo/env" ]; then
-        echo "Sourcing Rust environment..."
-
-        source "$HOME/.cargo/env"
+    # check if Rust is installed by looking for rustc
+    if ! command -v rustc &> /dev/null; then
+        echo "Rust is not installed. Installing Rust..."
+        if [ "$os" == "Darwin" ]; then
+            brew install rust
         else
-            echo "Warning: $HOME/.cargo/env not found. Please check your rustup installation."
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+            if [ -f "$HOME/.cargo/env" ]; then
+                echo "Sourcing Rust environment..."
+                source "$HOME/.cargo/env"
+            else
+                echo "Warning: $HOME/.cargo/env not found. Please check your rustup installation."
+            fi
         fi
+    else
+        echo "Rust is already installed. Skipping Rust installation."
     fi
 
     echo "Creating a new virtual environment..."
