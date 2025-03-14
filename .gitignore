@@ -3,3 +3,4 @@ velojson/*json
 *pyc
 target/
 .DS_Store
+venv/
