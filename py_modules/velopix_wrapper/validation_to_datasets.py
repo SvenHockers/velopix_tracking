@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import numpy as np
 from typing import Any, Dict, List, Tuple
 
 def save_to_file(results: List[Dict[str, Any]], directory: str, output_func: str = "output_aggregates", overwrite: bool = False) -> None:
