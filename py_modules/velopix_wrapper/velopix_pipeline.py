@@ -57,7 +57,10 @@ class PipelineBase(ABC):
         }
         Ne = len(self.events)
         Nr = len(self.parameters)
-        size_bytes = Ne * Nr * (Cv.get("overall_db") + Cv.get("category_db") + Cv.get("event_db"))
+        if self.nested:
+            size_bytes = Ne * Nr * (Cv.get("overall_db") + Cv.get("category_db") + Cv.get("event_db"))
+        else:
+            size_bytes = Ne * Nr * (Cv.get("overall_db") + Cv.get("category_db"))
         units = ["B", "KB", "MB", "GB", "TB"]
         size = size_bytes
         unit = "B"
