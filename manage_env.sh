@@ -59,7 +59,7 @@ if [ "$action" == "install" ]; then
     pip install -r requirements.txt
 
     cd rust_codebase
-    maturin build --release
+    maturin develop --release
     cd ..
 
 elif [ "$action" == "update" ]; then
@@ -81,7 +81,7 @@ elif [ "$action" == "update" ]; then
     pip install --upgrade -r requirements.txt
 
     cd rust_codebase
-    maturin build --release
+    maturin develop --release
     cd ..
 
 else
