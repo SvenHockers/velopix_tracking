@@ -27,11 +27,6 @@ impl SearchByTripletTrie {
         let min_strong_track_length = min_strong_track_length.unwrap_or(4);
         let allowed_missed_modules = allowed_missed_modules.unwrap_or(2);
 
-        println!("Instantiating TrackScatterSolver with parameters:");
-        println!("  max_scatter: {}", max_scatter);
-        println!("  min_strong_track_length: {}", min_strong_track_length);
-        println!("  allowed_missed_modules: {}", allowed_missed_modules);
-
         SearchByTripletTrie {
             max_scatter,
             min_strong_track_length,

@@ -48,7 +48,7 @@ pub struct GraphDFS {
     weight_assignment_iterations: i32,
     allowed_skip_modules: i32,
     allow_cross_track: bool,
-    clone_ghost_killing: bool,
+    clone_ghost_killing: bool
 }
 
 #[pymethods]
@@ -62,7 +62,7 @@ impl GraphDFS {
         weight_assignment_iterations: Option<i32>,
         allowed_skip_modules: Option<i32>,
         allow_cross_track: Option<bool>,
-        clone_ghost_killing: Option<bool>,
+        clone_ghost_killing: Option<bool>
     ) -> Self {
         GraphDFS {
             max_slopes: max_slopes.unwrap_or((0.7, 0.7)),
@@ -72,25 +72,13 @@ impl GraphDFS {
             weight_assignment_iterations: weight_assignment_iterations.unwrap_or(2),
             allowed_skip_modules: allowed_skip_modules.unwrap_or(1),
             allow_cross_track: allow_cross_track.unwrap_or(true),
-            clone_ghost_killing: clone_ghost_killing.unwrap_or(true),
+            clone_ghost_killing: clone_ghost_killing.unwrap_or(true)
         }
     }
 
     /// Solves the event using the DFS strategy and returns a list of Tracks.
     #[pyo3(text_signature = "($self, event)")]
     pub fn solve(&self, event: &Event) -> PyResult<Vec<Track>> {
-        println!(
-            "Invoking graph dfs with\n max slopes: {:?}\n max tolerance: {:?}\n max scatter: {}\n weight assignment iterations: {}\n minimum root weight: {}\n allow cross track: {}\n allowed skip modules: {}\n clone ghost killing: {}\n",
-            self.max_slopes,
-            self.max_tolerance,
-            self.max_scatter,
-            self.weight_assignment_iterations,
-            self.minimum_root_weight,
-            self.allow_cross_track,
-            self.allowed_skip_modules,
-            self.clone_ghost_killing
-        );
-
         // Work on a copy of the event.
         let mut event_copy = event.clone();
         self.order_hits(&mut event_copy)?;
