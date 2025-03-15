@@ -4,6 +4,9 @@ mod algorithms;
 mod event_model;
 mod validator;
 
+use crate::event_model::hit::Hit;
+use crate::event_model::track::Track;
+use crate::event_model::module::Module;
 use crate::event_model::event::Event;
 use crate::algorithms::track_following::TrackFollowing;
 use crate::algorithms::graph_dfs::GraphDFS;
@@ -12,6 +15,9 @@ use crate::validator::validator::{ validate_print, validate_efficiency, validate
 
 #[pymodule]
 fn velopix_tracking(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<Hit>()?;
+    m.add_class::<Track>()?;
+    m.add_class::<Module>()?;
     m.add_class::<Event>()?;
     m.add_class::<TrackFollowing>()?;
     m.add_class::<GraphDFS>()?;
