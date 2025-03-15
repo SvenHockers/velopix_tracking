@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Union, Tuple
 import warnings
 
 class PipelineBase(ABC):
-    def __init__(self, events: List[Dict[str, Any]], parameter_map: List[Dict[str, Any]], intra_node: bool) -> None:
+    def __init__(self, events: List[Dict[str, Any]], intra_node: bool, parameter_map: List[Dict[str, Any]] = None) -> None:
         self.name = "Base"
         self.json_events = events
         self.nested = intra_node
