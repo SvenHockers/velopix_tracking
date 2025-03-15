@@ -71,6 +71,7 @@ class optimiserBase(ABC):
         Since the output of the velopix track returns a JSON array with various values (eg. ghost rates, clones, etc.)
         some method to convert these stats into a score that can be used by whatever model should be made
         """
+        pass
 
     def is_finished(self) -> bool:
         """
