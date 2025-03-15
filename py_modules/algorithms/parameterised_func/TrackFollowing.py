@@ -1,4 +1,4 @@
-from event_model.event_model import *
+from py_modules.event_model.event_model import *
 
 class track_following:
   '''The classical solver.

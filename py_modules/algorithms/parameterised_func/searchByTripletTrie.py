@@ -1,9 +1,8 @@
 import sys
 sys.path.append("../")
 
-import validator_lite as vl
 import json
-from event_model import *  # Assumes definitions for event, module, hit, track, etc.
+from py_modules.event_model.event_model import *
 
 class SearchByTripletTrie:
     def __init__(self,
@@ -220,34 +219,3 @@ class SearchByTripletTrie:
 
         return tracks
 
-# Example usage.
-if __name__ == "__main__":
-    json_data_all_events = []
-    all_tracks = []
-
-    # Instantiate the solver with custom parameters.
-    tf_solver = TrackFollowing(
-        max_scatter=0.1,
-        merge_factor=2,
-        trie_size=26,
-        min_hits_for_flag=4,
-        min_hits_for_track=4,
-        forward_offset=2,
-        dummy_hit_params=(0, 0, 0, -1)
-    )
-
-    print("Processing events", end="")
-    for event_number in range(0, 1):
-        print(".", end="")
-        sys.stdout.flush()
-        with open("../velojson/" + str(event_number) + ".json", "r") as f:
-            json_data = json.loads(f.read())
-        ev = event(json_data)
-
-        tracks = tf_solver.solve(ev)
-
-        json_data_all_events.append(json_data)
-        all_tracks.append(tracks)
-
-    print("\nValidating solution")
-    vl.validate_print(json_data_all_events, all_tracks)

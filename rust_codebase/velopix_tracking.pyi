@@ -110,7 +110,6 @@ class SearchByTripletTrie:
     def __init__(
         self,
         max_scatter: Optional[float] = None,
-        min_track_length: Optional[int] = None,
         min_strong_track_length: Optional[int] = None,
         allowed_missed_modules: Optional[int] = None
     ) -> None: ...
