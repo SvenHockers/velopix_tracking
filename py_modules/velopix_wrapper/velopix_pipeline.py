@@ -56,7 +56,7 @@ class PipelineBase(ABC):
         self.set_pMap([Optimiser.start(algorithm=self.name)])
         while not finished:
             self.run(overwrite=True)
-            Optimiser.add_run(self.get_results())
+            Optimiser.add_run(self.get_results()[-1])
             finished = Optimiser.is_finished()
             i += 1
             if i >= max_runs:
