@@ -38,7 +38,7 @@ class optimiserBase(ABC):
         to obtain a candidate parameter map, then validates it using self.algorithm's schema.
         """
         pMap = self._generate_next_pMap()
-        if self.algorithm is None:
+        if self._algorithm is None:
             raise ValueError("Algorithm not set. Please call start() to initialise the algorithm.")
         if self.validate_config(pMap, self._algorithm.value):
             return pMap
