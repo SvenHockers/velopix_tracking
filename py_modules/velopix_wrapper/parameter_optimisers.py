@@ -5,15 +5,8 @@ from .ReconstructionAlgorithms import ReconstructionAlgorithms
 
 class optimiserBase(ABC):
     def __init__(self):
-        self.runs = []
-        self.current_config = {}
-    
-    def is_finished(self) -> bool:
-        """
-        Determines if the optimisation process is finished.
-        Default implementation returns True to prevent infinient loop to occur.
-        """
-        return True
+        self.best_score = float("inf")
+        self.best_config = {}
     
     @staticmethod
     def validate_config(config: dict, schema: dict) -> bool:
@@ -26,10 +19,10 @@ class optimiserBase(ABC):
         return True
     
     def add_run(self, results: Any) -> None:
-        self.runs.append(results) # might consider changing this, since this variable can get quite large in size after many runs
+        self.runs = results # might consider changing this, since this variable can get quite large in size after many runs
 
     def get_optimised_pMap(self) -> Dict[str, Any]:
-        return self.current_config
+        return self.best_config
     
     def next_pMap(self) -> Dict[str, Any]:
         """
@@ -73,17 +66,15 @@ class optimiserBase(ABC):
         pass
 
     @abstractmethod
-    def convert_results_to_score(self) -> Any:
+    def _convert_results_to_score(self) -> Any:
         """ 
         Since the output of the velopix track returns a JSON array with various values (eg. ghost rates, clones, etc.)
         some method to convert these stats into a score that can be used by whatever model should be made
         """
 
-    @abstractmethod
-    def model(self) -> Any:
+    def is_finished(self) -> bool:
         """
-        Abstract method to define the custom algorithm model.
-        Must be implemented by child classes.
+        Determines if the optimisation process is finished.
+        Default implementation returns True to prevent infinient loop to occur.
         """
-        pass
-
+        return True
