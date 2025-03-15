@@ -40,7 +40,7 @@ class optimiserBase(ABC):
         pMap = self._generate_next_pMap()
         if self.algorithm is None:
             raise ValueError("Algorithm not set. Please call start() to initialise the algorithm.")
-        if self._validate_config(pMap, self._algorithm.value):
+        if self.validate_config(pMap, self._algorithm.value):
             return pMap
         raise ValueError("Parameter map validation failed.")
     
@@ -50,7 +50,7 @@ class optimiserBase(ABC):
     def start(self, algorithm: ReconstructionAlgorithms) -> Dict[str, Any]:
         self._algorithm = algorithm # this is required for the pMap validation
         pMap = self._start()
-        if self._validate_config(pMap, self._algorithm.value):
+        if self.validate_config(pMap, self._algorithm.value):
             return pMap
         raise ValueError("Parameter map validation failed.")
 
