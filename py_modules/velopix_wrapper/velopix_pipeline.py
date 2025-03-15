@@ -25,19 +25,20 @@ class PipelineBase(ABC):
 
     def run(self, overwrite: bool) -> None:
         # here I should include a warning if self.results != empty break to prevent loss of data
-        if self.results and not overwrite:
+        if hasattr(self, "results") and not overwrite:
             warnings.warn("Overwriting results. This will cause a loss of data!", UserWarning)
             return
-        self.results =  []
+        else:
+            self.results = []
         for pMap in self.parameters:
             model = self.model(pMap)
-            tstart = time.strptime()
+            tstart = time.time()
             self.tracks = model.solve_parallel(self.events)
-            runtime = time.strptime() - tstart 
-            if self.intra_node:
-                valMap = validate_to_json_nested(self.json_events, self.tracks)
+            runtime = time.time() - tstart 
+            if self.nested:
+                valMap = validate_to_json_nested(self.json_events, self.tracks, verbose=False)
             else:
-                valMap = validate_to_json(self.json_events, self.tracks)
+                valMap = validate_to_json(self.json_events, self.tracks, verbose=False)
             valMap["inference_time"] = runtime
             valMap["parameters"] = {
                 "max_slope": (pMap.get("x_slope"), pMap.get("y_slope")),
@@ -52,8 +53,8 @@ class PipelineBase(ABC):
         """ 
         i = 0
         finished = False
+        self.set_pMap([Optimiser.start(algorithm=self.name)])
         while not finished:
-            self.set_pMap(Optimiser.start(algorithm=self.name))
             self.run(overwrite=True)
             Optimiser.add_run(self.get_results())
             finished = Optimiser.is_finished()
@@ -61,7 +62,7 @@ class PipelineBase(ABC):
             if i >= max_runs:
                 break
             if not finished:
-                self.set_pMap(Optimiser.next_pMap())
+                self.set_pMap([Optimiser.next_pMap()])
         return Optimiser.get_optimised_pMap()
 
 
@@ -115,11 +116,11 @@ class PipelineBase(ABC):
             return func(self.results)
         
 class Pipeline_TrackFollowing(PipelineBase):
-    def __init__(self, events, parameter_map, intra_node):
-        super.__init__(events, parameter_map, intra_node)
+    def __init__(self, events, intra_node, parameter_map=None):
+        super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.TRACK_FOLLOWING
 
-    def model(map: Dict[str, Any]) -> TrackFollowing:
+    def model(self, map: Dict[str, Any]) -> TrackFollowing:
         return TrackFollowing(
             max_slopes=(map.get("x_slope"), map.get("y_slope")),
             max_tolerance=(map.get("x_tol"), map.get("y_tol")),
@@ -127,11 +128,11 @@ class Pipeline_TrackFollowing(PipelineBase):
         )
     
 class Pipeline_GraphDFS(PipelineBase):
-    def __init__(self, events, parameter_map, intra_node):
-        super.__init__(events, parameter_map, intra_node)
+    def __init__(self, events, intra_node, parameter_map=None):
+        super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.GRAPH_DFS
         
-    def model(map: Dict[str, Any]) -> GraphDFS:
+    def model(self, map: Dict[str, Any]) -> GraphDFS:
         return GraphDFS(
             max_slopes=(map.get("x_slope"), map.get("y_slope")),
             max_tolerance=(map.get("x_tol"), map.get("y_tol")),
@@ -144,11 +145,11 @@ class Pipeline_GraphDFS(PipelineBase):
         )
     
 class Pipeline_SearchByTripletTrie(PipelineBase):
-    def __init__(self, events, parameter_map, intra_node):
-        super.__init__(events, parameter_map, intra_node)
+    def __init__(self, events, intra_node, parameter_map=None):
+        super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.SEARCH_BY_TRIPLET_TRIE
 
-    def model(map: Dict[str, Any]) -> SearchByTripletTrie:
+    def model(self, map: Dict[str, Any]) -> SearchByTripletTrie:
         return SearchByTripletTrie(
             max_scatter=map.get("scatter"),
             min_strong_track_length=map.get("min_strong_track_length"),
