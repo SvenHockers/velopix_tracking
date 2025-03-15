@@ -1,6 +1,5 @@
 use pyo3::prelude::*;
 use rayon::prelude::*;
-use std::sync::{Arc, Mutex};
 use std::collections::{HashMap, HashSet};
 use crate::event_model::event::Event;
 use crate::event_model::hit::Hit;
@@ -12,9 +11,8 @@ use crate::event_model::module::Module;
 #[pyo3(text_signature = "(cls, max_scatter=None, min_track_length=None, min_strong_track_length=None, allowed_missed_modules=None)")]
 pub struct SearchByTripletTrie {
     max_scatter: f64,
-    min_track_length: usize,
     min_strong_track_length: usize,
-    allowed_missed_modules: usize, // still used logically via the miss flags below
+    allowed_missed_modules: usize, // used as the maximum allowed missed modules
 }
 
 #[pymethods]
@@ -22,45 +20,42 @@ impl SearchByTripletTrie {
     #[new]
     pub fn new(
         max_scatter: Option<f64>,
-        min_track_length: Option<usize>,
         min_strong_track_length: Option<usize>,
         allowed_missed_modules: Option<usize>,
     ) -> Self {
         let max_scatter = max_scatter.unwrap_or(0.1);
-        let min_track_length = min_track_length.unwrap_or(3);
         let min_strong_track_length = min_strong_track_length.unwrap_or(4);
         let allowed_missed_modules = allowed_missed_modules.unwrap_or(2);
 
         println!("Instantiating TrackScatterSolver with parameters:");
         println!("  max_scatter: {}", max_scatter);
-        println!("  min_track_length: {}", min_track_length);
         println!("  min_strong_track_length: {}", min_strong_track_length);
         println!("  allowed_missed_modules: {}", allowed_missed_modules);
 
         SearchByTripletTrie {
             max_scatter,
-            min_track_length,
             min_strong_track_length,
             allowed_missed_modules,
         }
     }
 
-    /// Public method exposed to Python.
     /// Processes the event to assemble tracks.
     #[pyo3(text_signature = "($self, event)")]
     pub fn solve(&self, event: &Event) -> Vec<Track> {
+        // Merge modules two by two.
         let module_pairs = self.merge_module_pairs(event);
+        // Build a trie with compatible triplets per module and hit pair.
         let compatible_triplets_trie = self.generate_compatible_triplets(&module_pairs);
-    
+
         let mut flagged_hits: HashSet<Hit> = HashSet::new();
         let mut forwarding_tracks: Vec<Track> = Vec::new();
         let mut final_tracks: Vec<Track> = Vec::new();
         let mut weak_tracks: Vec<Track> = Vec::new();
-    
+
         if module_pairs.len() < 3 {
             return final_tracks;
         }
-    
+
         // Use reversed slices similar to the Python version.
         let slice_m0 = &module_pairs[2..];
         let slice_m1 = &module_pairs[..(module_pairs.len() - 2)];
@@ -70,9 +65,9 @@ impl SearchByTripletTrie {
             } else {
                 None
             };
-    
+
             let mut forwarding_next_step: Vec<Track> = Vec::new();
-    
+
             // Process each track from the previous iteration.
             for mut t in forwarding_tracks {
                 // Ensure the track has at least 2 hits (seed length).
@@ -83,9 +78,9 @@ impl SearchByTripletTrie {
                 let len_hits = t.hits.len();
                 let h0 = t.hits[len_hits - 2].clone();
                 let h1 = t.hits[len_hits - 1].clone();
-                let prev_missed = t.missed_last_module; // bool is Copy
-    
-                // Branch 1: Extend via precomputed compatible triplets.
+                let prev_missed = t.missed_last_module; // copy the flag
+
+                // extend via precomputed compatible triplets.
                 if let Some(comp_module) = compatible_triplets_in_module {
                     if let Some(inner) = comp_module.get(&h0) {
                         if let Some((h2, _scatter)) = inner.get(&h1) {
@@ -96,17 +91,18 @@ impl SearchByTripletTrie {
                                     flagged_hits.insert(hit.clone());
                                 }
                             }
+                            // Reset miss information on a successful extension.
+                            t.missed_modules = 0;
                             t.missed_penultimate_module = prev_missed;
                             t.missed_last_module = false;
                             forwarding_next_step.push(t);
-                            continue; // Done with this track.
+                            continue;
                         }
                     }
                 }
-    
-                // Branch 2: Look for an extension directly in the corresponding event module.
+
+                // look for an extension directly in the corresponding event module.
                 let branch2_result: Option<Track> = {
-                    // Clone t so that we do not move the original.
                     let mut t_branch2 = t.clone();
                     let m_index = if m1.module_number > 0 {
                         (m1.module_number - 1) as usize
@@ -134,6 +130,7 @@ impl SearchByTripletTrie {
                                 }
                                 t_branch2.missed_penultimate_module = prev_missed;
                                 t_branch2.missed_last_module = false;
+                                t_branch2.missed_modules = 0;
                                 Some(t_branch2)
                             } else {
                                 None
@@ -145,31 +142,34 @@ impl SearchByTripletTrie {
                         None
                     }
                 };
-    
+
                 if let Some(track) = branch2_result {
                     forwarding_next_step.push(track);
                     continue;
                 }
-    
-                // Branch 3: No extension found, update miss flags.
-                let current_hits_len = t.hits.len();
-                // Clone t to update its miss flags.
-                let mut new_t = t.clone();
-                new_t.missed_penultimate_module = prev_missed;
-                new_t.missed_last_module = true;
-                if prev_missed {
-                    if current_hits_len >= self.min_strong_track_length {
-                        final_tracks.push(new_t);
+
+                // no extension found, update miss flags.
+                t.missed_modules += 1;
+                // update boolean flags based on the counter.
+                if t.missed_modules == 1 {
+                    t.missed_last_module = true;
+                } else if t.missed_modules == 2 {
+                    t.missed_penultimate_module = true;
+                }
+                // if the number of missed modules exceeds the allowed threshold, finalize the track.
+                if t.missed_modules > self.allowed_missed_modules as u8 {
+                    if t.hits.len() >= self.min_strong_track_length {
+                        final_tracks.push(t);
                     } else {
-                        weak_tracks.push(new_t);
+                        weak_tracks.push(t);
                     }
                 } else {
-                    forwarding_next_step.push(new_t);
+                    forwarding_next_step.push(t);
                 }
             }
             forwarding_tracks = forwarding_next_step;
-    
-            // Seeding: Create new tracks from the current module's compatible triplets.
+
+            // seeding: Create new tracks from the current module's compatible triplets.
             if let Some(comp_module) = compatible_triplets_in_module {
                 for (h0, inner_map) in comp_module {
                     let mut best_h1 = Hit::new(0.0, 0.0, 0.0, -1, Some(-1), Some(0.0), Some(false));
@@ -191,14 +191,15 @@ impl SearchByTripletTrie {
                             hits: vec![h0.clone(), best_h1, best_h2],
                             missed_last_module: false,
                             missed_penultimate_module: false,
+                            missed_modules: 0,
                         };
                         forwarding_tracks.push(new_track);
                     }
                 }
             }
         }
-    
-        // Consolidate tracks.
+
+        // consolidate tracks.
         for t in forwarding_tracks.into_iter() {
             if t.hits.len() >= self.min_strong_track_length {
                 final_tracks.push(t);
@@ -206,7 +207,7 @@ impl SearchByTripletTrie {
                 weak_tracks.push(t);
             }
         }
-        // Process weak tracks: add them if none of their first three hits are flagged.
+        // process weak tracks: add them if none of their first three hits are flagged.
         for t in weak_tracks.into_iter() {
             if !flagged_hits.contains(&t.hits[0])
                 && !flagged_hits.contains(&t.hits[1])
@@ -215,26 +216,24 @@ impl SearchByTripletTrie {
                 final_tracks.push(t);
             }
         }
-    
+
         final_tracks
-    }         
+    }
 
-    // #[pyo3(text_signature = "($self, events)")]
-    // pub fn solve_parallel(&self, events: Vec<Event>) -> PyResult<Vec<Vec<Track>>> {
-    //     let results: Vec<PyResult<Vec<Track>>> = events
-    //         .into_par_iter()
-    //         .map(|event| self.solve(&event))
-    //         .collect();
-
-    //     let mut all_tracks_per_event = Vec::with_capacity(results.len());
-    //     for event_tracks in results {
-    //         all_tracks_per_event.push(event_tracks?);
-    //     }
-    //     Ok(all_tracks_per_event)
-    // }
+    // The following parallel method is commented out but available if needed.
+    #[pyo3(text_signature = "($self, events)")]
+    pub fn solve_parallel(&self, events: Vec<Event>) -> PyResult<Vec<Vec<Track>>> {
+        let results: Result<Vec<Vec<Track>>, PyErr> = events
+            .into_par_iter()
+            .map(|event| -> Result<Vec<Track>, PyErr> {
+                Ok(self.solve(&event))
+            })
+            .collect();
+        results
+    }
 }
 
-// Private helper methods not exposed to Python.
+// Private helper methods not exposed to Python -> this improves performance of the algorithm
 impl SearchByTripletTrie {
     fn merge_module_pairs(&self, ev: &Event) -> Vec<Module> {
         let mut module_pairs = Vec::new();
@@ -284,7 +283,7 @@ impl SearchByTripletTrie {
         let hits0 = m0.hits().unwrap();
         let hits1 = m1.hits().unwrap();
         let hits2 = m2.hits().unwrap();
-    
+
         for h0 in hits0.iter() {
             for h1 in hits1.iter() {
                 let mut best_h2 = Hit::new(0.0, 0.0, 0.0, -1, Some(-1), Some(0.0), Some(false));

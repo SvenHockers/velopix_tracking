@@ -32,11 +32,7 @@ impl Track {
     }
 
     pub fn __repr__(&self) -> PyResult<String> {
-        Ok(format!(
-            "Track with {} hits, missed_modules: {}",
-            self.hits.len(),
-            self.missed_modules
-        ))
+        Ok(format!("Track with {} hits: {:?}", self.hits.len(), self.hits))
     }
 }
 
