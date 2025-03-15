@@ -85,7 +85,7 @@ Processes validation results using nested validation and returns three DataFrame
 from velopix_pipeline import Pipeline_GraphDFS
 
 # Example event data and parameters
-events = [{"event_id": 1, "data": {...}}, {"event_id": 2, "data": {...}}]
+events = [{...}, {...}] # List of JSON object (ie Events)
 parameters = [{"x_slope": 0.1, "y_slope": 0.2, "scatter": 0.3}]
 
 # Instantiate and run the pipeline
