@@ -242,11 +242,12 @@ for track in tracks:
 
 ## Improvement Suggestions
 
-- **GPU Acceleration:** 
-- **Enhanced Examples:** Include error handling for missing or malformed data.
-- **Parameter Details:** Provide more details on each constructor parameter.
-- **Visual Diagrams:** Add flowcharts illustrating the reconstruction process.
-- **Extended Validation Output:** Include sample outputs from validation functions.
-- **Integration Guidelines:** Offer recommendations on integrating **velopix_tracking** into larger projects.
+- [x] **Abstraction Wrappers:** Build logic wrappers for better ease of use ([link](./wrappers.md))
+- [ ] **GPU Acceleration:** Configure GPU compatabillity for optimal performace.
+- [ ] **Enhanced Examples:** Include error handling for missing or malformed data.
+- [ ] **Parameter Details:** Provide more details on each constructor parameter.
+- [ ] **Visual Diagrams:** Add flowcharts illustrating the reconstruction process.
+- [ ] **Extended Validation Output:** Include sample outputs from validation functions.
+- [ ] **Integration Guidelines:** Offer recommendations on integrating **velopix_tracking** into larger projects.
 
-This documentation serves as a comprehensive guide to using **velopix_tracking**. Happy tracking!
+[Go Back](../readme.md)
