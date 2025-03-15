@@ -46,16 +46,20 @@ class PipelineBase(ABC):
             }
             self.results.append(valMap)
 
-    def optimise_parameters(self, Optimiser: optimiserBase) -> Dict[str, Any]:
+    def optimise_parameters(self, Optimiser: optimiserBase, max_runs: int) -> Dict[str, Any]:
         """ 
         Ensure the `Optimiser` is build in accordance to the OptimiserBase class 
         """ 
+        i = 0
         finished = False
         while not finished:
             self.set_pMap(Optimiser.start(algorithm=self.name))
             self.run(overwrite=True)
             Optimiser.add_run(self.get_results())
             finished = Optimiser.is_finished()
+            i += 1
+            if i >= max_runs:
+                break
             if not finished:
                 self.set_pMap(Optimiser.next_pMap())
         return Optimiser.get_optimised_pMap()
