@@ -112,7 +112,6 @@ class Pipeline_SearchByTripletTrie(PipelineBase):
     def model(map: Dict[str, Any]) -> SearchByTripletTrie:
         return SearchByTripletTrie(
             max_scatter=map.get("scatter"),
-            min_track_length=map.get("min_track_length"),
             min_strong_track_length=map.get("min_strong_track_length"),
             allowed_missed_modules=map.get("allowed_missed_modules")
         )
