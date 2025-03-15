@@ -1,15 +1,17 @@
 from abc import ABC, abstractmethod
 import time
 import pandas as pd
-from validation_to_datasets import *
+from .validation_to_datasets import *
 from velopix_tracking import Event, TrackFollowing, GraphDFS, SearchByTripletTrie, \
                             validate_print, validate_to_json_nested, validate_to_json
-
+from .parameter_optimisers import optimiserBase
+from .ReconstructionAlgorithms import ReconstructionAlgorithms
 from typing import Any, Dict, List, Optional, Union, Tuple
 import warnings
 
 class PipelineBase(ABC):
     def __init__(self, events: List[Dict[str, Any]], parameter_map: List[Dict[str, Any]], intra_node: bool) -> None:
+        self.name = "Base"
         self.json_events = events
         self.nested = intra_node
         self.parameters = parameter_map
@@ -43,6 +45,24 @@ class PipelineBase(ABC):
                 "scatter": pMap.get("scatter")
             }
             self.results.append(valMap)
+
+    def optimise_parameters(self, Optimiser: optimiserBase) -> Dict[str, Any]:
+        """ 
+        Ensure the `Optimiser` is build in accordance to the OptimiserBase class 
+        """ 
+        finished = False
+        while not finished:
+            self.set_pMap(Optimiser.start(algorithm=self.name))
+            self.run(overwrite=True)
+            Optimiser.add_run(self.get_results())
+            finished = Optimiser.is_finished()
+            if not finished:
+                self.set_pMap(Optimiser.next_pMap())
+        return Optimiser.get_optimised_pMap()
+
+
+    def set_pMap(self, pMap: Dict[str, Any]) -> None:
+        self.parameters = pMap
 
     def get_results(self) -> List[Dict[str, Any]]:
         return self.results
@@ -91,6 +111,10 @@ class PipelineBase(ABC):
             return func(self.results)
         
 class Pipeline_TrackFollowing(PipelineBase):
+    def __init__(self, events, parameter_map, intra_node):
+        super.__init__(events, parameter_map, intra_node)
+        self.name = ReconstructionAlgorithms.TRACK_FOLLOWING
+
     def model(map: Dict[str, Any]) -> TrackFollowing:
         return TrackFollowing(
             max_slopes=(map.get("x_slope"), map.get("y_slope")),
@@ -99,6 +123,10 @@ class Pipeline_TrackFollowing(PipelineBase):
         )
     
 class Pipeline_GraphDFS(PipelineBase):
+    def __init__(self, events, parameter_map, intra_node):
+        super.__init__(events, parameter_map, intra_node)
+        self.name = ReconstructionAlgorithms.GRAPH_DFS
+        
     def model(map: Dict[str, Any]) -> GraphDFS:
         return GraphDFS(
             max_slopes=(map.get("x_slope"), map.get("y_slope")),
@@ -112,6 +140,10 @@ class Pipeline_GraphDFS(PipelineBase):
         )
     
 class Pipeline_SearchByTripletTrie(PipelineBase):
+    def __init__(self, events, parameter_map, intra_node):
+        super.__init__(events, parameter_map, intra_node)
+        self.name = ReconstructionAlgorithms.SEARCH_BY_TRIPLET_TRIE
+
     def model(map: Dict[str, Any]) -> SearchByTripletTrie:
         return SearchByTripletTrie(
             max_scatter=map.get("scatter"),
