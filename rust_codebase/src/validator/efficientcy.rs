@@ -26,9 +26,9 @@ pub struct Efficiency {
     #[pyo3(get)]
     pub n_hits: usize,
     #[pyo3(get)]
-    pub recoeffT: f64,
+    pub recoeff_t: f64,
     #[pyo3(get)]
-    pub purityT: f64,
+    pub purity_t: f64,
     #[pyo3(get)]
     pub avg_recoeff: f64,
     #[pyo3(get)]
@@ -85,11 +85,11 @@ impl Efficiency {
         }
 
         if self.n_particles > 0 {
-            self.recoeffT = 100.0 * self.n_reco as f64 / self.n_particles as f64;
+            self.recoeff_t = 100.0 * self.n_reco as f64 / self.n_particles as f64;
         }
 
         if self.n_reco > 0 {
-            self.purityT = 100.0 * self.n_pure / ((self.n_reco as f64) + (self.n_clones as f64));
+            self.purity_t = 100.0 * self.n_pure / ((self.n_reco as f64) + (self.n_clones as f64));
         }
     }
 }
@@ -107,8 +107,8 @@ impl Efficiency {
             n_events: 0,
             n_heff: 0.0,  
             n_hits: 0,
-            recoeffT: 0.0,
-            purityT: 0.0,
+            recoeff_t: 0.0,
+            purity_t: 0.0,
             avg_recoeff: 0.0,
             avg_purity: 0.0,
             avg_hiteff: 0.0,
@@ -151,11 +151,11 @@ impl fmt::Display for Efficiency {
             self.label,
             self.n_reco,
             self.n_particles,
-            self.recoeffT,
+            self.recoeff_t,
             self.avg_recoeff,
             self.n_clones,
             clone_percentage,
-            self.purityT,
+            self.purity_t,
             self.avg_purity,
             self.avg_hiteff,
             hit_eff_percentage
