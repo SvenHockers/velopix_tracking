@@ -21,8 +21,7 @@ class PipelineBase(ABC):
             self.events.append(Event(event))
 
     @abstractmethod
-    def model(map) -> Union[TrackFollowing, GraphDFS, SearchByTripletTrie]:
-        pass
+    def model(map) -> Union[TrackFollowing, GraphDFS, SearchByTripletTrie]: pass
 
     def run(self, overwrite: bool) -> None:
         # here I should include a warning if self.results != empty break to prevent loss of data
@@ -68,12 +67,9 @@ class PipelineBase(ABC):
                     self.set_pMap([Optimiser.next_pMap()])
         return Optimiser.get_optimised_pMap()
 
+    def set_pMap(self, pMap: Dict[str, Any]) -> None: self.parameters = pMap
 
-    def set_pMap(self, pMap: Dict[str, Any]) -> None:
-        self.parameters = pMap
-
-    def get_results(self) -> List[Dict[str, Any]]:
-        return self.results
+    def get_results(self) -> List[Dict[str, Any]]: return self.results
     
     def calculate_db_estimate(self) -> None:
         Cv = {
@@ -100,8 +96,7 @@ class PipelineBase(ABC):
         print(f"Estimated database size: {size:.2f} {unit}")
 
     # note this print func is computationally heavy
-    def print_validation(self) -> None:
-        validate_print(self.json_events, self.tracks)
+    def print_validation(self) -> None: validate_print(self.json_events, self.tracks)
 
     def generate_database(self, output_directory: str, overwrite: bool) -> None:
         func = "output_distributions" if self.nested else "output_aggregates"
