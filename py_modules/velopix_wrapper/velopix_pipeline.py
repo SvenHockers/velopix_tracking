@@ -7,6 +7,7 @@ from velopix_tracking import Event, TrackFollowing, GraphDFS, SearchByTripletTri
 from .parameter_optimisers import optimiserBase
 from .ReconstructionAlgorithms import ReconstructionAlgorithms
 from typing import Any, Dict, List, Optional, Union, Tuple
+from tqdm import tqdm
 import warnings
 
 class PipelineBase(ABC):
@@ -54,15 +55,17 @@ class PipelineBase(ABC):
         i = 0
         finished = False
         self.set_pMap([Optimiser.start(algorithm=self.name)])
-        while not finished:
-            self.run(overwrite=True)
-            Optimiser.add_run(self.get_results()[-1])
-            finished = Optimiser.is_finished()
-            i += 1
-            if i >= max_runs:
-                break
-            if not finished:
-                self.set_pMap([Optimiser.next_pMap()])
+        with tqdm(total=max_runs, desc="Optimising") as pbar:
+            while not finished:
+                self.run(overwrite=True)
+                Optimiser.add_run(self.get_results()[-1])
+                finished = Optimiser.is_finished()
+                i += 1
+                pbar.update(1)
+                if i >= max_runs:
+                    break
+                if not finished:
+                    self.set_pMap([Optimiser.next_pMap()])
         return Optimiser.get_optimised_pMap()
 
 
