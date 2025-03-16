@@ -4,8 +4,13 @@ from typing import Any, Dict, List, Optional, Union, Tuple
 from .ReconstructionAlgorithms import ReconstructionAlgorithms
 
 class optimiserBase(ABC):
-    def __init__(self):
-        self.best_score = float("inf")
+    def __init__(self, Objective: str = "min"):
+        if Objective == "min":
+            self.best_score = float("inf")
+        elif Objective == "max":
+            self.best_score = float("-inf")
+        else:
+            raise(AssertionError("Specify wether the objective function should maximise or minimise the objective function!"))
         self.best_config = {}
     
     @staticmethod
@@ -66,7 +71,7 @@ class optimiserBase(ABC):
         pass
 
     @abstractmethod
-    def score(self) -> Any:
+    def objective_func(self) -> Any:
         """ 
         Since the output of the velopix track returns a JSON array with various values (eg. ghost rates, clones, etc.)
         some method to convert these stats into a score that can be used by whatever model should be made
