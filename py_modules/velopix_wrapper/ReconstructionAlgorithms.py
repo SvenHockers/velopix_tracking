@@ -13,7 +13,7 @@ class ReconstructionAlgorithms(Enum):
         "x_tol": (float, None),
         "y_tol": (float, None),
         "scatter": (float, None),
-        "minimum_root_weight": (float, None),
+        "minimum_root_weight": (int, None),
         "weight_assignment_iterations": (int, None),
         "allowed_skip_modules": (int, None),
         "allow_cross_track": (bool, None),
