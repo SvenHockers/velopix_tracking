@@ -48,7 +48,7 @@ class PipelineBase(ABC):
             }
             self.results.append(valMap)
 
-    def optimise_parameters(self, Optimiser: optimiserBase, max_runs: int) -> Dict[str, Any]:
+    def optimise_parameters(self, Optimiser: optimiserBase, max_runs: int = 100) -> Dict[str, Any]:
         """ 
         Ensure the `Optimiser` is build in accordance to the OptimiserBase class 
         """ 
