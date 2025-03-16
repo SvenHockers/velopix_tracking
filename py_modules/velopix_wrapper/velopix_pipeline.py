@@ -5,7 +5,7 @@ from .validation_to_datasets import *
 from velopix_tracking import Event, TrackFollowing, GraphDFS, SearchByTripletTrie, \
                             validate_print, validate_to_json_nested, validate_to_json
 from .parameter_optimisers import optimiserBase
-from .ReconstructionAlgorithms import ReconstructionAlgorithms
+from .algorithm_schema import ReconstructionAlgorithms
 from typing import Any, Dict, List, Optional, Union, Tuple
 from tqdm import tqdm
 import warnings

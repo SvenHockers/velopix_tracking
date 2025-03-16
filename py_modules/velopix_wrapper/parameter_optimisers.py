@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union, Tuple
+from typing import Any, Dict
+import pandas as pd
 
-from .ReconstructionAlgorithms import ReconstructionAlgorithms
+from .algorithm_schema import ReconstructionAlgorithms
+from .event_metrics import EventMetricsCalculator
 
 class optimiserBase(ABC):
     def __init__(self, Objective: str = "min"):
-        if Objective == "min":
-            self.best_score = float("inf")
-        elif Objective == "max":
-            self.best_score = float("-inf")
-        else:
-            raise(AssertionError("Specify wether the objective function should maximise or minimise the objective function!"))
+        self.objective = Objective
+        if Objective == "min": self.best_score = float("inf")
+        elif Objective == "max": self.best_score = float("-inf")
+        else: raise(AssertionError("Specify wether the objective function should maximise or minimise the objective function!"))
         self.best_config = {}
     
     @staticmethod
@@ -23,17 +23,17 @@ class optimiserBase(ABC):
                 raise TypeError(f"Expected type {expected_type} for key '{key}', got {type(config[key])}.")
         return True
     
-    def add_run(self, results: Any) -> None:
-        self.run = results # might consider changing this, since this variable can get quite large in size after many runs
+    def start(self, algorithm: ReconstructionAlgorithms) -> Dict[str, Any]:
+        self._algorithm = algorithm # this is required for the pMap validation
+        pMap = self.init()
+        if self.validate_config(pMap, self._algorithm.value):
+            return pMap
+        raise ValueError("Parameter map validation failed.")
 
-    def get_optimised_pMap(self) -> Dict[str, Any]:
-        return self.best_config
-    
     def next_pMap(self) -> Dict[str, Any]:
         """
-        Return the next parameter map for the subsequent run.
-        This method uses the template method pattern: it calls _generate_next_pMap (implemented by the child)
-        to obtain a candidate parameter map, then validates it using self.algorithm's schema.
+        Return the next parameter map to the pipeline, this invokes next() method where the actual
+        logic is. And does an additional schema validation on it.
         """
         pMap = self.next()
         if self._algorithm is None:
@@ -42,45 +42,55 @@ class optimiserBase(ABC):
             return pMap
         raise ValueError("Parameter map validation failed.")
     
-    def get_run_data(self):
-        return self.run
+    def add_run(self, results: Any) -> None: self.run = results
+
+    def get_optimised_pMap(self) -> Dict[str, Any]: return self.best_config
+
+    def get_run_data(self) -> Dict[str, Any]: return self.run
     
-    def start(self, algorithm: ReconstructionAlgorithms) -> Dict[str, Any]:
-        self._algorithm = algorithm # this is required for the pMap validation
-        pMap = self.init()
-        if self.validate_config(pMap, self._algorithm.value):
-            return pMap
-        raise ValueError("Parameter map validation failed.")
+    """  
+    Algorithm implementation methods
+        init -> initialise the algorithm
+        next -> next itteration
+        is_finsihed -> define convergence conditions :: True == Done, False != Done
+    """
 
     @abstractmethod
-    def init(self) -> Dict[str, Any]:
-        """ 
-        This is the actual logic for the start call
-        """
-        pass
+    def init(self) -> Dict[str, Any]: pass
 
     @abstractmethod
-    def next(self) -> Dict[str, Any]:
-        """
-        Abstract method that should generate the next parameter map.
-        Child classes must implement this method. The output of this method will be automatically
-        validated by the next_pMap method in the base class.
-        
-        :return: A dictionary with the next set of parameters.
-        """
-        pass
+    def next(self) -> Dict[str, Any]: pass
 
     @abstractmethod
-    def objective_func(self) -> Any:
-        """ 
-        Since the output of the velopix track returns a JSON array with various values (eg. ghost rates, clones, etc.)
-        some method to convert these stats into a score that can be used by whatever model should be made
-        """
-        pass
+    def is_finished(self) -> bool: return True
+    
+    """ 
+    Objective Function methods:
+    """
 
-    def is_finished(self) -> bool:
-        """
-        Determines if the optimisation process is finished.
-        Default implementation returns True to prevent infinient loop to occur.
-        """
-        return True
+    @abstractmethod
+    def objective_func(self) -> Any: pass
+
+    @property
+    def __objective_factor(self): return -1 if self.objective == "min" else 1
+    
+    def event_objective(self):
+        validation_results = self.get_run_data()
+
+        n_tracks = validation_results.get("total_tracks")
+        if n_tracks <= 0: return float("-inf") * self.__objective_factor
+
+        runtime = validation_results.get("inference_time") 
+        ghost_rate = validation_results.get("overall_ghost_rate")
+        clones = validation_results.get("categories", []) 
+        clone_pct = sum(map(lambda clone: clone.get("clone_percentage", 0), clones))
+
+        score = -(ghost_rate + clone_pct / len(clones) + runtime / 3) 
+        return score * self.__objective_factor
+
+    def intra_event_objective(self):
+        calculator = EventMetricsCalculator(self.get_run_data())
+        score = -calculator.get_metric(metric="clone_percentage", stat="std")
+
+        del calculator 
+        return score * self.__objective_factor + self.event_objective() 
