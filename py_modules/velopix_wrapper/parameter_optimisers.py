@@ -19,7 +19,7 @@ class optimiserBase(ABC):
         return True
     
     def add_run(self, results: Any) -> None:
-        self.runs = results # might consider changing this, since this variable can get quite large in size after many runs
+        self.run = results # might consider changing this, since this variable can get quite large in size after many runs
 
     def get_optimised_pMap(self) -> Dict[str, Any]:
         return self.best_config
@@ -38,7 +38,7 @@ class optimiserBase(ABC):
         raise ValueError("Parameter map validation failed.")
     
     def get_run_data(self):
-        return self.runs
+        return self.run
     
     def start(self, algorithm: ReconstructionAlgorithms) -> Dict[str, Any]:
         self._algorithm = algorithm # this is required for the pMap validation

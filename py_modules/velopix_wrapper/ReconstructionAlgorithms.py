@@ -35,18 +35,18 @@ class ReconstructionAlgorithms(Enum):
         bounds = {}
         if self is ReconstructionAlgorithms.TRACK_FOLLOWING:
             bounds = {
-                "x_slope": (-10.0, 10.0),
-                "y_slope": (-10.0, 10.0),
-                "x_tol": (-1.0, 1.0),
-                "y_tol": (-1.0, 1.0),
+                "x_slope": (0,75.0),
+                "y_slope": (0, 75.0),
+                "x_tol": (0, 10.0),
+                "y_tol": (-0, 10.0),
                 "scatter": (0.0, 5.0),
             }
         elif self is ReconstructionAlgorithms.GRAPH_DFS:
             bounds = {
-                "x_slope": (-10.0, 10.0),
-                "y_slope": (-10.0, 10.0),
-                "x_tol": (-1.0, 1.0),
-                "y_tol": (-1.0, 1.0),
+                "x_slope": (0, 10.0),
+                "y_slope": (0, 10.0),
+                "x_tol": (0, 1.0),
+                "y_tol": (0, 1.0),
                 "scatter": (0.0, 5.0),
                 "minimum_root_weight": (0.0, 10.0),
                 "weight_assignment_iterations": (1, 10),
