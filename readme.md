@@ -144,7 +144,9 @@ classDiagram
 class Event_Model_Module {<<module>>
 - Event
 - Hit
-- Module} 
+- Module
+- MCParticle
+- Efficientcy} 
 class Velopix_Tracking_Module {<<module>>
 - Track Following
 - Graph DFS
