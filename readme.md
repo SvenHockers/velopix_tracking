@@ -134,3 +134,33 @@ Example output:
 ```
 
 ---
+
+### 5️⃣ Abstraction Overview
+To streamline the parameter optimalisation of the reconstruction algorithms. A number of modules, classes and functions have been implemented. Below is an overview of how all these classes interact with eachother. For a more detailed overview [See this reference](./docs/abstractions_diagram.md).
+
+
+```mermaid
+classDiagram
+class Event_Model_Module {<<module>>} 
+class Velopix_Tracking_Module {<<module>>} 
+class Core_Wrappers_Module {<<module>>} 
+class Pipelines_Module {<<module>>} 
+class ExampleOptimizer {<<Optimizer Implementation>>
+    + Optimization Algorithm
+    + __init__()
+    + start()
+    + is_finished()
+    + objective_func()}
+
+Event_Model_Module --> Velopix_Tracking_Module : interacts with
+Event_Model_Module --> Core_Wrappers_Module : uses
+Event_Model_Module --> Pipelines_Module : creates events for
+
+Velopix_Tracking_Module --> Core_Wrappers_Module : uses metrics from
+Velopix_Tracking_Module *-- Pipelines_Module : creates pipelines for
+
+Core_Wrappers_Module <|.. ExampleOptimizer : Implements Optimizer
+Pipelines_Module ..> ExampleOptimizer : Selects Reconstruction Algorithm
+```
+
+---
