@@ -26,7 +26,7 @@ This project provides: </br>
 
 The algorithm **matches detected hits** with actual particle tracks from the event to assess reconstruction accuracy.
 
-![Velopix reconstruction example](docs/reco_example.png "Velopix Reconstruction Example")
+![Velopix reconstruction example](docs/VeloPix_Illustration.png "Velopix Reconstruction Example")
 
 ---
 
