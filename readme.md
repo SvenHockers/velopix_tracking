@@ -141,10 +141,23 @@ To streamline the parameter optimalisation of the reconstruction algorithms. A n
 
 ```mermaid
 classDiagram
-class Event_Model_Module {<<module>>} 
-class Velopix_Tracking_Module {<<module>>} 
-class Core_Wrappers_Module {<<module>>} 
-class Pipelines_Module {<<module>>} 
+class Event_Model_Module {<<module>>
+- Event
+- Hit
+- Module} 
+class Velopix_Tracking_Module {<<module>>
+- Track Following
+- Graph DFS
+- Search By Triplet Trie
++ validation_methods()} 
+class Core_Wrappers_Module {<<module>>
+- PipelineBase
+- OptimiserBase
+- EventMetricsCalculator
+- ReconstructionAlgorithms} 
+class Pipelines_Module {<<module>>
+ - Implements the reconstruction algorithms
+} 
 class ExampleOptimizer {<<Optimizer Implementation>>
     + Optimization Algorithm
     + __init__()
@@ -155,12 +168,13 @@ class ExampleOptimizer {<<Optimizer Implementation>>
 Event_Model_Module --> Velopix_Tracking_Module : interacts with
 Event_Model_Module --> Core_Wrappers_Module : uses
 Event_Model_Module --> Pipelines_Module : creates events for
+Core_Wrappers_Module <-- Pipelines_Module : uses 
 
 Velopix_Tracking_Module --> Core_Wrappers_Module : uses metrics from
 Velopix_Tracking_Module *-- Pipelines_Module : creates pipelines for
 
 Core_Wrappers_Module <|.. ExampleOptimizer : Implements Optimizer
-Pipelines_Module ..> ExampleOptimizer : Selects Reconstruction Algorithm
+Pipelines_Module <.. ExampleOptimizer : Selects Reconstruction Algorithm
 ```
 
 ---
