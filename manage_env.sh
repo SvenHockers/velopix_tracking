@@ -58,7 +58,7 @@ if [ "$action" == "install" ]; then
     echo "Installing dependencies from requirements.txt..."
     pip install -r requirements.txt
 
-    cd rust_codebase
+    cd VeloPix
     maturin develop --release
     cd ..
 
@@ -80,7 +80,7 @@ elif [ "$action" == "update" ]; then
     echo "Updating dependencies from requirements.txt..."
     pip install --upgrade -r requirements.txt
 
-    cd rust_codebase
+    cd VeloPix
     maturin develop --release
     cd ..
 
