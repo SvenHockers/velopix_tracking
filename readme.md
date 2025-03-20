@@ -97,6 +97,7 @@ This project includes three distinct methods to reconstruct particle tracks from
   This advanced method merges detector modules in pairs to reduce complexity and builds a trie of compatible hit triplets based on a scatter metric. It uses both seeding and forwarding strategies to generate tracks.</br>
   [Learn more](./docs/ALGO_SearchByTripletTree.md)
 
+![reconstruction algorithm example](docs/TrackReconstructionExample.gif "Reconstruction Gif")
 
 ### 4️⃣ **Validation & Performance Metrics**
 To evaluate the algorithm, we check **three key metrics**:
