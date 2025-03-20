@@ -191,7 +191,7 @@ pipeline.generate_database("output_directory", overwrite=True)
 
 For more in-depth details, refer to:  
 - [Track Reconstruction Documentation](../readme.md)  
-- [Performance Validation](./docs/VALIDATION_GUIDE.md)  
+- [Performance Validation](./VALIDATION_GUIDE.md)  
 
 [🔙 Return to README](../readme.md)  
 
