@@ -1,39 +1,39 @@
-# Track Reconstruction Made Easy 🚀
+# Track Reconstruction Framework  
 
-This project focuses on **track reconstruction** using real data from the **LHCb detector at CERN**. Particles moving at nearly the speed of light leave traces (hits) as they pass through detector modules. Our goal is to **reconstruct these tracks efficiently**.
+This repository provides a **high-performance track reconstruction framework** for processing real data from the **LHCb detector at CERN**. Charged particles moving at relativistic speeds leave **measurable hits** as they traverse detector modules. The objective is to **efficiently reconstruct particle trajectories with high accuracy**.
 
-Think you can improve it? **Give it a shot!**  
-Run the reconstruction algorithm with:
+Execute the reconstruction pipeline with:
 ```bash
 python3 run_track_reconstruction.py
 ```
 
-For installation details, refer to [Installation Guide](./docs/INSTALLATION.md).
+For installation and setup instructions, refer to the [Installation Guide](./docs/INSTALLATION.md).
 
 ---
 
+## Track Reconstruction Overview  
 
+At the **LHCb detector**, high-energy collisions generate a multitude of charged particles, each leaving **spatial hit patterns** on detector modules.  
+Each proton-proton collision forms an **event**, processed in real-time to reconstruct individual particle trajectories.
 
-## 📌 What is Track Reconstruction?
+This repository provides:  
+✔ **Optimized reconstruction algorithms in Rust for increased performance**  
+✔ **Efficient event parsing and processing**  
+✔ **Validation tools for performance assessment**  
 
-At the **LHCb detector**, millions of particles collide, leaving hits on detector modules.  
-Multiple collisions happening simultaneously are grouped into an **event**, which is processed in real-time to reconstruct the individual tracks of particles.
-
-This project provides: </br>
-✅ **Sample events in JSON format**  
-✅ **Three reconstruction algorithm**  
-✅ **Validation tools to check performance**  
-
-The algorithm **matches detected hits** with actual particle tracks from the event to assess reconstruction accuracy.
+The reconstruction algorithm **correlates recorded hits** with true particle trajectories to evaluate accuracy.
 
 ![Velopix reconstruction example](docs/VeloPix_Illustration.png "Velopix Reconstruction Example")
 
 ---
 
-## 🛠 How It Works
-Also view the [documentation](./docs/velopix_tracking.md) of the custom `velopix_tracking` package. 
-### 1️⃣ **Loading Input Data**
-Input event files are **JSON-formatted**. The provided **event model** helps parse these files.
+## How It Works  
+
+For an in-depth explanation, see the [documentation](./docs/velopix_tracking.md).  
+
+### **1. Loading Input Data**  
+
+Input event files are provided in **JSON format**, parsed using the **event model** implemented in Rust.  
 
 Example usage:
 ```python
@@ -46,16 +46,16 @@ with open("events/velo_event_0.json") as f:
 event = em.event(json_data)
 ```
 
-Each event consists of **52 detector modules**, each detecting **hits from particles**.
+Each event consists of **52 detector modules**, registering **particle-induced hits**.
 
 ```python
 print(len(event.modules))  # Output: 52
 print(len(event.hits))     # Output: 996
 ```
 
-Each hit contains:
-- **ID**  
-- **{x, y, z} coordinates**  
+Each recorded hit contains:
+- **Hit ID**  
+- **Spatial coordinates {x, y, z}**  
 
 Example:
 ```python
@@ -65,57 +65,68 @@ print(event.hits[0])
 
 ---
 
-### 2️⃣ **Understanding Modules & Hits**
-Modules are placed along the **z-axis** in the detector. Each module detects **multiple hits** (real particle tracks + some noise).
+### **2. Track Reconstruction Algorithms**  
 
-Example:
-```python
-print(event.modules[0])
-```
-```
-Module 0:
-  At z: {-288.08, -286.918}
-  Number of hits: 20
-  Hits: [#0 module 0 {9.18, -30.509, -288.08}, #1 module 0 {-9.137, -12.308, -288.08}, ...]
-```
+The reconstruction pipeline is fully implemented in **Rust**, significantly improving performance over previous implementations.  
+
+This framework includes three distinct algorithms:  
+
+- **Track-Following Algorithm**  
+  Links hits across modules based on geometric constraints to form linear tracks.  
+  [Details](./docs/ALGO_TrackFollowing.md)  
+
+- **Graph-Based DFS Algorithm**  
+  Constructs a directed graph where hits form nodes, and edges represent potential track connections. A depth-first search (DFS) identifies valid trajectories.  
+  [Details](./docs/ALGO_DFS.md)  
+
+- **Merged-Triplet Algorithm**  
+  Groups detector modules into pairs and forms triplets of hits using a scatter metric. A search tree refines the reconstruction.  
+  [Details](./docs/ALGO_SearchByTripletTree.md)  
+
+#### **Reconstruction Process**  
+
+The track reconstruction process consists of **three key stages**, each contributing to the identification and refinement of particle trajectories. The algorithms implemented in Rust optimize computational performance, ensuring fast and reliable reconstruction.  
+
+1) **Seeding** – Identifying candidate track segments  
+   - Hits detected across multiple detector modules are analyzed to identify potential track seeds.  
+   - The algorithm selects **pairs or triplets of hits** that align within expected trajectory constraints.  
+   - Seeding strategies vary across algorithms, with some prioritizing **geometrical alignment**, while others employ **graph-based clustering**.  
+
+2) **Forwarding** – Extending and refining track candidates  
+   - Once a seed is established, the algorithm **propagates the trajectory** by searching for additional hits along the expected particle path.  
+   - Tracks are extended based on **momentum constraints, spatial continuity, and detector geometry**.  
+   - Ambiguous tracks are handled using **scoring metrics**, filtering out those inconsistent with known particle kinematics.  
+
+3) **Final Reconstruction** – Evaluating track quality and filtering invalid paths  
+   - The final track candidates undergo **validation and refinement**.  
+   - Track fitting techniques such as **Kalman filtering** can be applied to improve precision.  
+   - The reconstruction efficiency is assessed based on:  
+     - **Hit efficiency** – Fraction of true hits used in reconstructed tracks  
+     - **Purity** – Fraction of hits in a track that originate from the same true particle  
+     - **Track completeness** – Degree to which a track covers the full particle trajectory
+
+![Reconstruction Algorithm Example](docs/TrackReconstructionExample.gif "Reconstruction Process")
 
 ---
 
-### 3️⃣ **Track Reconstruction Algorithms**
+### **3. Validation & Performance Metrics**  
 
-This project includes three distinct methods to reconstruct particle tracks from detector hits. Each algorithm employs a unique strategy to link hits into coherent tracks, allowing you to choose the one that best fits your data and analysis needs.
+Performance evaluation is based on three key metrics:  
 
-- **Simple Track-Following Algorithm**  
-  This method sequentially scans the detector modules, matching hits based on geometric constraints to form linear tracks. </br>
-  [Learn more](./docs/ALGO_TrackFollowing.md)  
-
-- **Graph DFS Algorithm**  
-  In this approach, hits are first grouped into segments which become the nodes of a directed graph. A depth-first search (DFS) is then used to traverse the graph and extract tracks. </br>
-  [Learn more](./docs/ALGO_DFS.md)  
-
-- **Final Merged-Triplet Algorithm**  
-  This advanced method merges detector modules in pairs to reduce complexity and builds a trie of compatible hit triplets based on a scatter metric. It uses both seeding and forwarding strategies to generate tracks.</br>
-  [Learn more](./docs/ALGO_SearchByTripletTree.md)
-
-![reconstruction algorithm example](docs/TrackReconstructionExample.gif "Reconstruction Gif")
-
-### 4️⃣ **Validation & Performance Metrics**
-To evaluate the algorithm, we check **three key metrics**:
-
-✅ **Reconstruction Efficiency**:  
-   *How many real tracks were successfully reconstructed?*  
+✔ **Reconstruction Efficiency**  
+   *Percentage of real tracks successfully reconstructed:*  
    ```math
    \frac{n_{reconstructed\_tracks}}{n_{real\_tracks}} = RC
    ```
 
-✅ **Clone Tracks**:  
-   *Duplicate tracks that match an already reconstructed one.*  
+✔ **Clone Tracks**  
+   *Fraction of redundant reconstructions:*  
    ```math
    \frac{n_{clone\_tracks}}{n_{correct\_reconstructed\_tracks}} = CT
    ```
 
-✅ **Ghost Tracks**:  
-   *Fake tracks caused by noise or incorrect reconstruction.*  
+✔ **Ghost Tracks**  
+   *Fraction of falsely reconstructed tracks:*  
    ```math
    \frac{n_{incorrect\_reconstructed\_tracks}}{n_{real\_tracks}} = GT
    ```
@@ -136,30 +147,30 @@ Example output:
 
 ---
 
-### 5️⃣ Abstraction Overview
-To streamline the parameter optimalisation of the reconstruction algorithms. A number of modules, classes and functions have been implemented. Below is an overview of how all these classes interact with eachother. For a more detailed overview [See this reference](./docs/abstractions_diagram.md).
+### **4. System Architecture Overview**  
 
+The framework is structured into modular components to facilitate **performance optimization and algorithm development**. The following diagram illustrates the interaction between key modules. For a more detailed overview, see [this reference](./docs/abstractions_diagram.md).
 
 ```mermaid
 classDiagram
-class Event_Model_Module {<<module>>
+class Event_Model_Module {<<Rust Module>>
 - Event
 - Hit
 - Module
 - MCParticle
-- Efficientcy} 
-class Velopix_Tracking_Module {<<module>>
+- Efficiency} 
+class Velopix_Tracking_Module {<<Rust Module>>
 - Track Following
 - Graph DFS
 - Search By Triplet Trie
 + validation_methods()} 
-class Core_Wrappers_Module {<<module>>
+class Core_Wrappers_Module {<<Rust Module>>
 - PipelineBase
 - OptimiserBase
 - EventMetricsCalculator
 - ReconstructionAlgorithms} 
-class Pipelines_Module {<<module>>
- - Implements the reconstruction algorithms
+class Pipelines_Module {<<Python Wrapper>>
+ - Calls optimized Rust algorithms
 } 
 class ExampleOptimizer {<<Optimizer Implementation>>
     + Optimization Algorithm
@@ -179,5 +190,12 @@ Velopix_Tracking_Module *-- Pipelines_Module : creates pipelines for
 Core_Wrappers_Module <|.. ExampleOptimizer : Implements Optimizer
 Pipelines_Module <.. ExampleOptimizer : Selects Reconstruction Algorithm
 ```
-
 ---
+
+## **Key Improvements Over Previous Versions**  
+
+- **Performance Gains:** The core **event model, reconstruction algorithms, and validation methods** have been rewritten in **Rust**, providing significant speed improvements over Python.  
+- **Streamlined Implementation:** Removed redundant examples and simplified explanations while retaining all critical information.  
+- **Enhanced Clarity:** More concise descriptions, ensuring a professional and accessible documentation style.  
+
+For further details or contributions, consult the **[developer documentation](./docs/DEVELOPER_GUIDE.md)**.  
