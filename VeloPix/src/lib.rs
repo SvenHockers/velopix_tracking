@@ -14,7 +14,7 @@ use crate::algorithms::search_by_triplet_trie::SearchByTripletTrie;
 use crate::validator::validator::{ validate_print, validate_efficiency, validate_to_json, validate_to_json_nested };
 
 #[pymodule]
-fn velopix_tracking(_py: Python, m: &PyModule) -> PyResult<()> {
+fn velopix(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<Hit>()?;
     m.add_class::<Track>()?;
     m.add_class::<Module>()?;

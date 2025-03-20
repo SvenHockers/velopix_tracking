@@ -1,12 +1,13 @@
 [package]
-name = "velopix_tracking"
+name = "velopix"
 authors = ["Sven Hockers"]
-version = "0.7.5"
+version = "0.7.7"
 edition = "2021"
 build = "build.rs"
+license = "MIT"
 
 [lib]
-name = "velopix_tracking"
+name = "velopix"
 crate-type = ["cdylib"]
 
 [dependencies]
@@ -14,3 +15,6 @@ pyo3 = { version = "0.18", features = ["extension-module"] }
 rayon = "1.5"
 ordered-float = "3.6"
 itertools = "0.10.5"
+
+[package.metadata.maturin]
+include = ["velopix/*.pyi"]
