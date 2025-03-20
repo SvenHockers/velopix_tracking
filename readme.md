@@ -196,6 +196,6 @@ Pipelines_Module <.. ExampleOptimizer : Selects Reconstruction Algorithm
 
 - **Performance Gains:** The core **event model, reconstruction algorithms, and validation methods** have been rewritten in **Rust**, providing significant speed improvements over Python.  
 - **Streamlined Implementation:** Removed redundant examples and simplified explanations while retaining all critical information.  
-- **Enhanced Clarity:** More concise descriptions, ensuring a professional and accessible documentation style.  
+- **Abstraction:** Added vast amounts of abstraction to easily handle multiple algorithms and optimalisation methods.
 
 For further details or contributions, consult the **[developer documentation](./docs/DEVELOPER_GUIDE.md)**.  
