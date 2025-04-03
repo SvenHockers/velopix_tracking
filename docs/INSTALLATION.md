@@ -50,6 +50,9 @@ chmod +x manage_env.sh
 ```
 This grants execution permission to the script.
 
+### 🛑 Rust not installed (Windows)
+If you get an Rust not installed error during installation on Windows check if `Curl` is installed. If this is not the case [install](https://curl.se/download.html) it
+
 ### 🚀 Activating the Virtual Environment
 If the environment is not active, manually activate it using:
 ```bash
