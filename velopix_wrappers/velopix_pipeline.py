@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 import time
 import pandas as pd
 from .validation_to_datasets import *
-from . import Event, TrackFollowing, GraphDFS, SearchByTripletTrie, \
+from velopix import Event, TrackFollowing, GraphDFS, SearchByTripletTrie, \
                             validate_print, validate_to_json_nested, validate_to_json
-from ._parameter_optimisers import optimiserBase
-from ._algorithm_schema import ReconstructionAlgorithms
+from .parameter_optimisers import optimiserBase
+from .algorithm_schema import ReconstructionAlgorithms
 from typing import Any, Dict, List, Optional, Union, Tuple
 from tqdm import tqdm
 import warnings

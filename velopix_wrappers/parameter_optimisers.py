@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from ._algorithm_schema import ReconstructionAlgorithms
-from ._event_metrics import EventMetricsCalculator
+from .algorithm_schema import ReconstructionAlgorithms
+from .event_metrics import EventMetricsCalculator
 
 class optimiserBase(ABC):
     def __init__(self, Objective: str = "min"):

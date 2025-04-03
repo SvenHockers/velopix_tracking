@@ -17,4 +17,4 @@ ordered-float = "3.6"
 itertools = "0.10.5"
 
 [package.metadata.maturin]
-include = ["velopix/*.pyi"]
+include = ["*.pyi"]
