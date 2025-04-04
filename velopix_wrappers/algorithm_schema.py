@@ -35,29 +35,29 @@ class ReconstructionAlgorithms(Enum):
         bounds = {}
         if self is ReconstructionAlgorithms.TRACK_FOLLOWING:
             bounds = {
-                "x_slope": (0,75.0),
-                "y_slope": (0, 75.0),
-                "x_tol": (0, 10.0),
-                "y_tol": (-0, 10.0),
-                "scatter": (0.0, 5.0),
+                "x_slope": (0, 1),
+                "y_slope": (0, 1),
+                "x_tol": (0.4 , 0.8),
+                "y_tol": (0.4, 0.8),
+                "scatter": (0.0, 0.8),
             }
         elif self is ReconstructionAlgorithms.GRAPH_DFS:
             bounds = {
-                "x_slope": (0, 10.0),
-                "y_slope": (0, 10.0),
-                "x_tol": (0, 1.0),
-                "y_tol": (0, 1.0),
-                "scatter": (0.0, 5.0),
+                "x_slope": (0, 1),
+                "y_slope": (0, 1),
+                "x_tol": (0.4, 0.4),
+                "y_tol": (0.4, 0.8),
+                "scatter": (0.0, 0.8),
                 "minimum_root_weight": (0.0, 10.0),
                 "weight_assignment_iterations": (1, 10),
-                "allowed_skip_modules": (0, 10),
+                "allowed_skip_modules": (0, 6),
                 # For booleans we dont need bounds 
                 "allow_cross_track": None,
                 "clone_ghost_killing": None,
             }
         elif self is ReconstructionAlgorithms.SEARCH_BY_TRIPLET_TRIE:
             bounds = {
-                "scatter": (0.0, 5.0),
+                "scatter": (0, 1),
                 "min_strong_track_length": (1, 20),
                 "allowed_missed_modules": (0, 5),
             }
