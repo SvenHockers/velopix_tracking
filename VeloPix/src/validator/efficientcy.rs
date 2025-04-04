@@ -147,7 +147,7 @@ impl fmt::Display for Efficiency {
         };
         write!(
             f,
-            "{:18} : {} from {} ({:.1}%, {:.1}%) {} clones ({:.2}%), purity: ({:.2}%, {:.2}%),  hitEff: ({:.2}%, {:.2}%)",
+            "{:<20} {:>6} from {:>6} ({:>5.1}%, {:>5.1}%) {:>4} clones ({:>5.2}%), purity: ({:>6.2}%, {:>6.2}%), hitEff: ({:>6.2}%, {:>6.2}%)",
             self.label,
             self.n_reco,
             self.n_particles,
