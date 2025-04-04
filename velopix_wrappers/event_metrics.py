@@ -1,5 +1,20 @@
 import pandas as pd
 
+"""
+Here is a list of available metrics:
+    'avg_hiteff'
+    'avg_purity'
+    'avg_recoeff'
+    'clone_percentage'
+    'hit_eff_percentage'
+    'label': 'long_strange',
+    'n_clones'
+    'n_particles'
+    'n_reco'
+    'purityT'
+    'recoeffT'
+"""
+
 class EventMetricsCalculator:
     def __init__(self, validation_results):
         self.validation_results = validation_results
@@ -15,17 +30,32 @@ class EventMetricsCalculator:
             raise(AssertionError("Something went wrong (Sorry was to lazy to define a helpfull error)"))
 
         numeric_cols = self.df_events.select_dtypes(include=['number']).columns
-        aggregations = {
-            'mean': 'mean',
-            'std': 'std',
-            'min': 'min',
-            'max': 'max',
-            'median': 'median',
-            'q25': lambda x: x.quantile(0.25),
-            'q75': lambda x: x.quantile(0.75),
-            'skew': lambda x: x.skew(),
-            'kurtosis': lambda x: x.kurtosis()
-        }
+
+        def q25(x):
+            return x.quantile(0.25)
+        def q75(x):
+            return x.quantile(0.75)
+        def my_skew(x):
+            return x.skew()
+        def my_kurtosis(x):
+            return x.kurtosis()
+        
+        q25.__name__ = 'q25'
+        q75.__name__ = 'q75'
+        my_skew.__name__ = 'skew'
+        my_kurtosis.__name__ = 'kurtosis'
+
+        aggregations = [
+            'mean',
+            'std',
+            'min',
+            'max',
+            'median',
+            q25,
+            q75,
+            my_skew,
+            my_kurtosis
+        ]
         agg_df = self.df_events.groupby("label")[numeric_cols].agg(aggregations)
 
         # Compute IQR and add as an extra column
