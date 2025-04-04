@@ -81,7 +81,7 @@ pub fn validate_efficiency(
 
 
 #[pyfunction]
-pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> PyResult<()> {
+pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>, verbose: bool) -> PyResult<()> {
     Python::with_gil(|py|{
 
         let mut tracking_data = Vec::new();
@@ -150,13 +150,13 @@ pub fn validate_print(py_events: Vec<&PyDict>, py_tracks: Vec<Vec<Track>>) -> Py
             let cond_long_fromb5: for<'a> fn(&'a MCParticle) -> bool =
                 |p: &MCParticle| p.islong && p.over5 && p.fromb && (p.pid.abs() != 11);
 
-            eff_velo = update_efficiencies(eff_velo, event, tracks, &weights, "velo", cond_velo, true);
-            eff_long = update_efficiencies(eff_long, event, tracks, &weights, "long", cond_long, true);
-            eff_long5 = update_efficiencies(eff_long5, event, tracks, &weights, "long>5GeV", cond_long5, true);
-            eff_long_strange = update_efficiencies(eff_long_strange, event, tracks, &weights, "long_strange", cond_long_strange, true);
-            eff_long_strange5 = update_efficiencies(eff_long_strange5, event, tracks, &weights, "long_strange>5GeV", cond_long_strange5, true);
-            eff_long_fromb = update_efficiencies(eff_long_fromb, event, tracks, &weights, "long_fromb", cond_long_fromb, true);
-            eff_long_fromb5 = update_efficiencies(eff_long_fromb5, event, tracks, &weights, "long_fromb>5GeV", cond_long_fromb5, true);
+            eff_velo = update_efficiencies(eff_velo, event, tracks, &weights, "velo", cond_velo, verbose);
+            eff_long = update_efficiencies(eff_long, event, tracks, &weights, "long", cond_long, verbose);
+            eff_long5 = update_efficiencies(eff_long5, event, tracks, &weights, "long>5GeV", cond_long5, verbose);
+            eff_long_strange = update_efficiencies(eff_long_strange, event, tracks, &weights, "long_strange", cond_long_strange, verbose);
+            eff_long_strange5 = update_efficiencies(eff_long_strange5, event, tracks, &weights, "long_strange>5GeV", cond_long_strange5, verbose);
+            eff_long_fromb = update_efficiencies(eff_long_fromb, event, tracks, &weights, "long_fromb", cond_long_fromb, verbose);
+            eff_long_fromb5 = update_efficiencies(eff_long_fromb5, event, tracks, &weights, "long_fromb>5GeV", cond_long_fromb5, verbose);
         }
 
         let nevents = tracking_data.len();
