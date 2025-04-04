@@ -65,6 +65,8 @@ class PipelineBase(ABC):
                     break
                 if not finished:
                     self.set_pMap([Optimiser.next_pMap()])
+        if finished:
+            print("Finsihed condition met, exiting...")
         return Optimiser.get_optimised_pMap()
 
     def set_pMap(self, pMap: Dict[str, Any]) -> None: self.parameters = pMap
@@ -96,7 +98,12 @@ class PipelineBase(ABC):
         print(f"Estimated database size: {size:.2f} {unit}")
 
     # note this print func is computationally heavy
-    def print_validation(self) -> None: validate_print(self.json_events, self.tracks)
+    def print_validation(self, parameters: Dict = None, verbose: bool = True) -> None: 
+        if not hasattr(self, "tracks"):
+            if parameters == None:
+                raise("Tracks not initialised, provide argument 'parameters' to compute!")
+            self.tracks = self.model(parameters).solve_parallel(self.events)
+        validate_print(self.json_events, self.tracks, verbose)
 
     def generate_database(self, output_directory: str, overwrite: bool) -> None:
         func = "output_distributions" if self.nested else "output_aggregates"

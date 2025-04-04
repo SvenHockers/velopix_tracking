@@ -84,6 +84,7 @@ class optimiserBase(ABC):
         clones = validation_results.get("categories", []) 
         clone_pct = sum(map(lambda clone: clone.get("clone_percentage", 0), clones))
 
+        # Note this is a really shitty optimalisation func, so please implement this for the actual algo's
         score = -(ghost_rate + clone_pct / len(clones) + runtime / 3) 
         return score * self.__objective_factor
 
