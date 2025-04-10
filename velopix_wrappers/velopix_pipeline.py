@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 import time
-import pandas as pd
+# import pandas as pd
 from .validation_to_datasets import *
 from velopix import Event, Track, TrackFollowing, GraphDFS, SearchByTripletTrie, \
                             validate_print, validate_to_json_nested, validate_to_json
 from .parameter_optimisers import optimiserBase
 from .algorithm_schema import ReconstructionAlgorithms
 from .custom_types import *
-from typing import Optional, cast
+from typing import cast#, Optional
 from tqdm import tqdm
 import warnings
 
@@ -106,20 +106,20 @@ class PipelineBase(ABC):
             self.tracks: list[Track] = self.model(parameters).solve_parallel(self.events) # type: ignore
         validate_print(self.json_events, self.tracks, verbose)
 
-    def generate_database(self, output_directory: str, overwrite: bool) -> None:
-        func = "output_distributions" if self.nested else "output_aggregates"
-        save_to_file(results=self.results, directory=output_directory, output_func=func, overwrite=overwrite)
+    # def generate_database(self, output_directory: str, overwrite: bool) -> None:
+    #     func = "output_distributions" if self.nested else "output_aggregates"
+    #     save_to_file(results=self.results, directory=output_directory, output_func=func, overwrite=overwrite)
 
-    def generate_and_get_database(self) -> tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame]]:
-        sfunc = "output_distributions" if self.nested else "output_aggregates"
-        func: Callable[[list[ValidationResults]], Any] = getattr(sfunc, None) # type: ignore
-        if not callable(func):
-            raise ValueError(f"Output function '{sfunc}' not found.")
+    # def generate_and_get_database(self) -> tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame]]:
+    #     sfunc = "output_distributions" if self.nested else "output_aggregates"
+    #     func: Callable[[list[ValidationResults]], Any] = getattr(sfunc, None) # type: ignore
+    #     if not callable(func):
+    #         raise ValueError(f"Output function '{sfunc}' not found.")
         
-        if sfunc == "output_aggregates":
-            return func(self.results)
-        else:
-            return func(self.results)
+    #     if sfunc == "output_aggregates":
+    #         return func(self.results)
+    #     else:
+    #         return func(self.results)
         
 class TrackFollowingPipeline(PipelineBase):
     def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMapType]|None=None):
