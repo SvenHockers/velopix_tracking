@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Union, Optional, TypeAlias, cast
+from typing import Union, Optional, cast
+from .custom_types import *
 
-ConfigType: TypeAlias = dict[str, tuple[Union[type[float], type[bool], type[int]], None]]
 class ReconstructionAlgorithms(Enum):
     TRACK_FOLLOWING = {
         "x_slope": (float, None),

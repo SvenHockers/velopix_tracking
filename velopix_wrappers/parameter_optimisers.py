@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import TypeAlias, cast, Union
+from typing import cast
 
 from .algorithm_schema import ReconstructionAlgorithms
 from .event_metrics import EventMetricsCalculator
-
-pMapType: TypeAlias = dict[str, tuple[type[int]|type[float]|type[bool],None]]
-ValidationResults: TypeAlias = dict[str, dict[str, list[dict[str, Union[int, float, str]]]]]
+from .custom_types import *
 
 class optimiserBase(ABC):
     def __init__(self, Objective: str = "min"):

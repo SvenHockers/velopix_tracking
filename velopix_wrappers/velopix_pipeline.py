@@ -6,14 +6,10 @@ from velopix import Event, Track, TrackFollowing, GraphDFS, SearchByTripletTrie,
                             validate_print, validate_to_json_nested, validate_to_json
 from .parameter_optimisers import optimiserBase
 from .algorithm_schema import ReconstructionAlgorithms
-from typing import TypeAlias, Optional, Union, cast
+from .custom_types import *
+from typing import Optional, cast
 from tqdm import tqdm
 import warnings
-
-pMapType: TypeAlias = dict[str, tuple[type[int]|type[float]|type[bool],None]]
-EventType: TypeAlias = list[dict[str, Any]]
-ReconstructionAlgorithmsType: TypeAlias = Union[TrackFollowing, GraphDFS, SearchByTripletTrie]
-ValidationResults: TypeAlias = dict[str, dict[str, list[dict[str, Union[int, float, str]]]]]
 
 class PipelineBase(ABC):
     def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMapType]|None = None) -> None:

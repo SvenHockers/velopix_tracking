@@ -1,5 +1,6 @@
 import pandas as pd
-from typing import TypeAlias, Union
+from typing import Union
+from .custom_types import *
 """
 Here is a list of available metrics:
     'avg_hiteff'
@@ -14,9 +15,6 @@ Here is a list of available metrics:
     'purityT'         
     'recoeffT'                        
 """
-ValidationResults: TypeAlias = dict[str, dict[str, list[dict[str, Union[int, float, str]]]]]
-MetricsDict: TypeAlias = dict[str, int|float]
-
 class EventMetricsCalculator:
     def __init__(self, validation_results: ValidationResults):
         self.validation_results = validation_results
