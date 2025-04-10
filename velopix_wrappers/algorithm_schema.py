@@ -31,11 +31,11 @@ class ReconstructionAlgorithms(Enum):
     def get_config(self) -> ConfigType:
         return self.value.copy() # type: ignore
     
-    def _bounds(self) -> dict[str, Optional[tuple[Union[int, float], Union[int, float]]]]:
+    def get_bounds(self) -> boundType:
         """
         Implemented bounds of each variable directly in the enums this way we can easly retrieve them from the optimalisation func
         """
-        bounds: dict[str, Optional[tuple[Union[int, float], Union[int, float]]]] = {}
+        bounds: boundType = {}
         if self is ReconstructionAlgorithms.TRACK_FOLLOWING:
             bounds = {
                 "x_slope": (0, 1),
