@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import Union, Optional, cast
+from .custom_types import *
+
 class ReconstructionAlgorithms(Enum):
     TRACK_FOLLOWING = {
         "x_slope": (float, None),
@@ -7,32 +10,32 @@ class ReconstructionAlgorithms(Enum):
         "y_tol": (float, None),
         "scatter": (float, None),
     }
-    GRAPH_DFS = {
-        "x_slope": (float, None),
-        "y_slope": (float, None),
-        "x_tol": (float, None),
-        "y_tol": (float, None),
-        "scatter": (float, None),
-        "minimum_root_weight": (int, None),
-        "weight_assignment_iterations": (int, None),
-        "allowed_skip_modules": (int, None),
-        "allow_cross_track": (bool, None),
+    GRAPH_DFS = cast(dict[str, tuple[type[float] | type[int] | type[bool], None]], {
+        "x_slope": (float, None),  
+        "y_slope": (float, None), 
+        "x_tol": (float, None),    
+        "y_tol": (float, None),    
+        "scatter": (float, None),  
+        "minimum_root_weight": (int, None),          
+        "weight_assignment_iterations": (int, None),    
+        "allowed_skip_modules": (int, None),           
+        "allow_cross_track": (bool, None),              
         "clone_ghost_killing": (bool, None),
-    }
-    SEARCH_BY_TRIPLET_TRIE = {
+    })
+    SEARCH_BY_TRIPLET_TRIE = cast(dict[str, tuple[type[float] | type[int], None]], {
         "scatter": (float, None),
         "min_strong_track_length": (int, None),
         "allowed_missed_modules": (int, None),
-    }
+    })
 
-    def get_config(self):
-        return self.value.copy() # return a copy to avoid modifying the original dictionary
+    def get_config(self) -> ConfigType:
+        return self.value.copy() # type: ignore
     
-    def _bounds(self) -> dict:
+    def _bounds(self) -> dict[str, Optional[tuple[Union[int, float], Union[int, float]]]]:
         """
         Implemented bounds of each variable directly in the enums this way we can easly retrieve them from the optimalisation func
         """
-        bounds = {}
+        bounds: dict[str, Optional[tuple[Union[int, float], Union[int, float]]]] = {}
         if self is ReconstructionAlgorithms.TRACK_FOLLOWING:
             bounds = {
                 "x_slope": (0, 1),
@@ -61,4 +64,4 @@ class ReconstructionAlgorithms(Enum):
                 "min_strong_track_length": (1, 20),
                 "allowed_missed_modules": (0, 5),
             }
-        return bounds
+        return bounds.copy()
