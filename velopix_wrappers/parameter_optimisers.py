@@ -70,13 +70,13 @@ class optimiserBase(ABC):
     def objective_func(self) -> int|float: pass
 
     @property
-    def __objective_factor(self): return -1 if self.objective == "min" else 1
+    def _objective_factor(self): return -1 if self.objective == "min" else 1
     
-    def event_objective(self) -> float:
+    def event_objective(self, weights: list[float]) -> float:
         validation_results = self.get_run_data()
 
         n_tracks: int = cast(int, validation_results.get("total_tracks"))
-        if n_tracks <= 0: return float("-inf") * self.__objective_factor
+        if n_tracks <= 0: return float("-inf") * self._objective_factor
 
         runtime: float = cast(float, validation_results.get("inference_time"))
         ghost_rate: float = cast(float, validation_results.get("overall_ghost_rate"))
@@ -84,12 +84,12 @@ class optimiserBase(ABC):
         clone_pct: float = sum(map(lambda clone: clone.get("clone_percentage", 0), clones))
 
         # Note this is a really shitty optimalisation func, so please implement this for the actual algo's
-        score = -(ghost_rate + clone_pct / len(clones) + runtime / 3) 
-        return score * self.__objective_factor
+        score = -(weights[0] * ghost_rate + weights[1] * clone_pct / len(clones) + weights[3] * runtime / 3) 
+        return score * self._objective_factor
 
-    def intra_event_objective(self):
+    def intra_event_objective(self, weights: list[float]) -> float:
         calculator = EventMetricsCalculator(self.get_run_data())
         score = -calculator.get_metric(metric="clone_percentage", stat="std")
 
         del calculator 
-        return score * self.__objective_factor + self.event_objective() 
+        return score * self._objective_factor + self.event_objective(weights) 

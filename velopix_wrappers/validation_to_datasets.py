@@ -1,8 +1,8 @@
 import os
 import pandas as pd
-from typing import Any, TypeAlias, Union, cast, Callable
+from typing import Any, cast, Callable
+from .custom_types import *
 
-ValidationResults: TypeAlias = dict[str, dict[str, list[dict[str, Union[int, float, str]]]]]
 def save_to_file(results: ValidationResults, directory: str, output_func: str = "output_aggregates", overwrite: bool = False) -> None:
     """
     Wrapped function logic to call, generate dataframes and save them to an output directory automatticly
