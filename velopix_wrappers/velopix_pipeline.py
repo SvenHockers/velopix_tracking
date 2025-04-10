@@ -22,7 +22,7 @@ class PipelineBase(ABC):
             self.events.append(Event(event))
 
     @abstractmethod
-    def model(pMap) -> ReconstructionAlgorithmsType: pass
+    def model(self, pMap: pMapType) -> ReconstructionAlgorithmsType: pass
 
     def run(self, overwrite: bool) -> None:
         # here I should include a warning if self.results != empty break to prevent loss of data
@@ -31,7 +31,7 @@ class PipelineBase(ABC):
             return
         else:
             self.results: list[ValidationResults] = []
-        for pMap in (self.parameters or []):
+        for pMap in cast(list[pMapType], self.parameters):
             model: ReconstructionAlgorithmsType = self.model(pMap)
             tstart = time.time()
             self.tracks: list[Track] = model.solve_parallel(self.events) # type: ignore
@@ -103,7 +103,7 @@ class PipelineBase(ABC):
         if not hasattr(self, "tracks"):
             if parameters == None:
                 raise(AssertionError)
-            self.tracks = self.model(parameters).solve_parallel(self.events) # type: ignore
+            self.tracks: list[Track] = self.model(parameters).solve_parallel(self.events) # type: ignore
         validate_print(self.json_events, self.tracks, verbose)
 
     def generate_database(self, output_directory: str, overwrite: bool) -> None:
@@ -126,11 +126,11 @@ class TrackFollowingPipeline(PipelineBase):
         super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.TRACK_FOLLOWING
 
-    def model(self, map: pMapType) -> TrackFollowing:
+    def model(self, pMap: pMapType) -> TrackFollowing:
         return TrackFollowing(
-            max_slopes=(map.get("x_slope"), map.get("y_slope")), # type: ignore
-            max_tolerance=(map.get("x_tol"), map.get("y_tol")), # type: ignore
-            max_scatter=map.get("scatter") # type: ignore
+            max_slopes=(pMap.get("x_slope"), pMap.get("y_slope")), # type: ignore
+            max_tolerance=(pMap.get("x_tol"), pMap.get("y_tol")), # type: ignore
+            max_scatter=pMap.get("scatter") # type: ignore
         )
     
 class GraphDFSPipeline(PipelineBase):
@@ -138,16 +138,16 @@ class GraphDFSPipeline(PipelineBase):
         super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.GRAPH_DFS
         
-    def model(self, map: pMapType) -> GraphDFS:
+    def model(self, pMap: pMapType) -> GraphDFS:
         return GraphDFS(
-            max_slopes=(map.get("x_slope"), map.get("y_slope")), # type: ignore
-            max_tolerance=(map.get("x_tol"), map.get("y_tol")), # type: ignore
-            max_scatter=map.get("scatter"), # type: ignore
-            minimum_root_weight=map.get("minimum_root_weight"), # type: ignore
-            weight_assignment_iterations=map.get("weight_assignment_iterations"), # type: ignore
-            allowed_skip_modules=map.get("allowed_skip_modules"), # type: ignore
-            allow_cross_track=map.get("allow_cross_track"), # type: ignore
-            clone_ghost_killing=map.get("clone_ghost_killing") # type: ignore
+            max_slopes=(pMap.get("x_slope"), pMap.get("y_slope")), # type: ignore
+            max_tolerance=(pMap.get("x_tol"), pMap.get("y_tol")), # type: ignore
+            max_scatter=pMap.get("scatter"), # type: ignore
+            minimum_root_weight=pMap.get("minimum_root_weight"), # type: ignore
+            weight_assignment_iterations=pMap.get("weight_assignment_iterations"), # type: ignore
+            allowed_skip_modules=pMap.get("allowed_skip_modules"), # type: ignore
+            allow_cross_track=pMap.get("allow_cross_track"), # type: ignore
+            clone_ghost_killing=pMap.get("clone_ghost_killing") # type: ignore
         )
     
 class SearchByTripletTriePipeline(PipelineBase):
@@ -155,9 +155,9 @@ class SearchByTripletTriePipeline(PipelineBase):
         super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.SEARCH_BY_TRIPLET_TRIE
 
-    def model(self, map: pMapType) -> SearchByTripletTrie:
+    def model(self, pMap: pMapType) -> SearchByTripletTrie:
         return SearchByTripletTrie(
-            max_scatter=map.get("scatter"), # type: ignore
-            min_strong_track_length=map.get("min_strong_track_length"), # type: ignore
-            allowed_missed_modules=map.get("allowed_missed_modules") # type: ignore
+            max_scatter=pMap.get("scatter"), # type: ignore
+            min_strong_track_length=pMap.get("min_strong_track_length"), # type: ignore
+            allowed_missed_modules=pMap.get("allowed_missed_modules") # type: ignore
         )
