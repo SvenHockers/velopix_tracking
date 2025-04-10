@@ -1,12 +1,13 @@
 import os
 import pandas as pd
-from typing import Any, Dict, List, Tuple
+from typing import Any, TypeAlias, Union, cast, Callable
 
-def save_to_file(results: List[Dict[str, Any]], directory: str, output_func: str = "output_aggregates", overwrite: bool = False) -> None:
+ValidationResults: TypeAlias = dict[str, dict[str, list[dict[str, Union[int, float, str]]]]]
+def save_to_file(results: ValidationResults, directory: str, output_func: str = "output_aggregates", overwrite: bool = False) -> None:
     """
     Wrapped function logic to call, generate dataframes and save them to an output directory automatticly
     """
-    func = getattr(output_func, None)
+    func: Callable[[ValidationResults], Any] = getattr(output_func, None) # type: ignore
     if not callable(func):
         raise ValueError(f"Output function '{output_func}' not found.")
     
@@ -14,13 +15,13 @@ def save_to_file(results: List[Dict[str, Any]], directory: str, output_func: str
         df1, df2 = func(results)
         files = [os.path.join(directory, "overall.csv"),
                     os.path.join(directory, "category.csv")]
-        dataframes = [df1, df2]
+        dataframes: list[pd.DataFrame] = [df1, df2]
     elif output_func == "output_distrubutions":
         df1, df2, df3 = func(results)
         files = [os.path.join(directory, "overall.csv"),
                     os.path.join(directory, "category.csv"),
                     os.path.join(directory, "event_distribution.csv")]
-        dataframes = [df1, df2, df3]
+        dataframes: list[pd.DataFrame] = [df1, df2, df3]
     else:
         raise NotImplementedError(f"output_func: {output_func} does not exist")
     
@@ -34,20 +35,20 @@ def save_to_file(results: List[Dict[str, Any]], directory: str, output_func: str
     for df, file in zip(dataframes, files):
         df.to_csv(file, index=False)
 
-def output_aggregates(results: List[Dict[str, Any]]) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def output_aggregates(results: ValidationResults) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Given a list of JSON result dictionaries from multiple runs,
     return two Dataframes:
     - overall_df: one row per run with overall metrics and parameters.
     - category_df: one row per category per run, also including parameters.
     """
-    overall_rows = []
+    overall_rows: list[dict[str, int|float]] = []
     category_rows = []
     
     for run_id, res in enumerate(results):
         # extract solver parameters if available.
-        params = res.get('parameters', {})
-        overall_row = {
+        params: dict[str, int|float] = cast(dict[str, int|float], res.get('parameters', {}))
+        overall_row: dict[str, int|float] = {
             'run_id': run_id,
             'inference_time': res.get('inference_time'),
             'total_tracks': res.get('total_tracks'),
@@ -71,7 +72,7 @@ def output_aggregates(results: List[Dict[str, Any]]) -> Tuple[pd.DataFrame, pd.D
     
     return overall_df, category_df
 
-def output_distributions(results: List[Dict[str, Any]]) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def output_distributions(results: ValidationResults) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Given a list of JSON result dictionaries from multiple runs using the nested validaton method,
     return three Dataframes:
