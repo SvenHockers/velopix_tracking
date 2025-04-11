@@ -4,3 +4,5 @@ velojson/*json
 target/
 .DS_Store
 venv/
+.vscode
+
