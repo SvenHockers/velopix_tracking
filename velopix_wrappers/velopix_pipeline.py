@@ -4,7 +4,7 @@ import time
 from .validation_to_datasets import *
 from velopix import Event, Track, TrackFollowing, GraphDFS, SearchByTripletTrie, \
                             validate_print, validate_to_json_nested, validate_to_json
-from .parameter_optimisers import optimiserBase
+from .optimizers import BaseOptimizer
 from .algorithm_schema import ReconstructionAlgorithms
 from .custom_types import *
 from typing import cast#, Optional
@@ -48,7 +48,7 @@ class PipelineBase(ABC):
             }
             self.results.append(valMap)
 
-    def optimise_parameters(self, Optimiser: optimiserBase, max_runs: int = 100) -> pMap:
+    def optimise_parameters(self, Optimiser: BaseOptimizer, max_runs: int = 100) -> pMap:
         """ 
         Ensure the `Optimiser` is build in accordance to the OptimiserBase class 
         """ 

@@ -9,7 +9,7 @@ from math import nan
 from .custom_types import *
 
 
-class optimiserBase(ABC):
+class BaseOptimizer(ABC):
     def __init__(self, objective: str = "min", auto_eval: dict[str, bool|list[float]] = {"autoEval": False, "nested": True, "weights": []}):
         self.objective = objective
         if objective == "min": self.best_score = float("inf")
