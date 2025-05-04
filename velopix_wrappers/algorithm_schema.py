@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Optional, cast
+from typing import cast
 from .custom_types import *
 
 class ReconstructionAlgorithms(Enum):

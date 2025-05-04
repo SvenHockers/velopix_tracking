@@ -1,28 +1,31 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from copy import deepcopy
 from typing import cast
 
 from .algorithm_schema import ReconstructionAlgorithms
 from .event_metrics import EventMetricsCalculator
+from math import nan
 from .custom_types import *
 
+
 class optimiserBase(ABC):
-    def __init__(self, Objective: str = "min", auto_eval: dict[str, bool|list[float]] = {"autoEval": False, "nested": False, "weights": [0,0,0]}):
-        self.objective = Objective
-        if Objective == "min": self.best_score = float("inf")
-        elif Objective == "max": self.best_score = float("-inf")
+    def __init__(self, objective: str = "min", auto_eval: dict[str, bool|list[float]] = {"autoEval": False, "nested": True, "weights": []}):
+        self.objective = objective
+        if objective == "min": self.best_score = float("inf")
+        elif objective == "max": self.best_score = float("-inf")
         else: raise(AssertionError("Specify wether the objective function should maximise or minimise the objective function!"))
-        self.best_config: pMapType = {}
+        self.best_config: pMap = {}
         self.auto_evaluate: bool = cast(bool, auto_eval.get("autoEval"))
         if self.auto_evaluate:
             self.nested = cast(bool, auto_eval.get("nested"))
             self.weights = cast(list[float], auto_eval.get("weights"))
             self.score_history: list[float] = []
             self.history: dict[str, float] = {}
-            self.prev_config: pMapType = {}
+            self.prev_config: pMap = {}
     
     @staticmethod
-    def validate_config(config: pMapType, schema: pMapType) -> bool:
+    def validate_config(config: pMap, schema: pMapType) -> bool:
         """
         Validates that the keys in the parameter map match the expected types defined.
         """
@@ -31,21 +34,21 @@ class optimiserBase(ABC):
                 raise TypeError(f"Expected type {expected_type} for key '{key}', got {type(config[key])}.")
         return True
     
-    def start(self, algorithm: ReconstructionAlgorithms) -> pMapType:
+    def start(self, algorithm: ReconstructionAlgorithms) -> pMap:
         self._algorithm = algorithm # this is required for the pMap validation
-        pMap = self.init()
-        if self.validate_config(pMap, self._algorithm.value):
-            return pMap
+        pmap = self.init()
+        if self.validate_config(pmap, self._algorithm.value):
+            return pmap
         raise ValueError("Parameter map validation failed.")
 
-    def next_pMap(self) -> pMapType:
+    def next_pMap(self) -> pMap:
         """
         Return the next parameter map to the pipeline, this invokes next() method where the actual
         logic is. And does an additional schema validation on it.
         """
-        pMap = self.next()
-        if self.validate_config(pMap, self._algorithm.value):
-            return pMap
+        pmap = self.next()
+        if self.validate_config(pmap, self._algorithm.value):
+            return pmap
         raise ValueError("Parameter map validation failed.")
     
     def add_run(self, results: ValidationResults) -> None: 
@@ -53,7 +56,7 @@ class optimiserBase(ABC):
             self._evaluate_run(weight=self.weights, nested=self.nested)
         self.run = results
 
-    def get_optimised_pMap(self) -> pMapType: return self.best_config
+    def get_optimised_pMap(self) -> pMap: return self.best_config
 
     def get_run_data(self) -> ValidationResults: return self.run
     
@@ -65,10 +68,10 @@ class optimiserBase(ABC):
     """
 
     @abstractmethod
-    def init(self) -> pMapType: pass
+    def init(self) -> pMap: pass
 
     @abstractmethod
-    def next(self) -> pMapType: pass
+    def next(self) -> pMap: pass
 
     @abstractmethod
     def is_finished(self) -> bool: return True
@@ -77,36 +80,15 @@ class optimiserBase(ABC):
     Objective Function methods:
     """
 
-    @abstractmethod
-    def objective_func(self, w: list[float], nested: bool = False) -> int|float: 
-        if nested:
-            return self.intra_event_objective(w)
-        return self.event_objective(w)
-
-    @property
-    def _objective_factor(self): return -1 if self.objective == "min" else 1
-    
-    def event_objective(self, weights: list[float]) -> float:
-        validation_results = self.get_run_data()
-
-        n_tracks: int = cast(int, validation_results.get("total_tracks"))
-        if n_tracks <= 0: return float("-inf") * self._objective_factor
-
-        runtime: float = cast(float, validation_results.get("inference_time"))
-        ghost_rate: float = cast(float, validation_results.get("overall_ghost_rate"))
-        clones: list[dict[str, float]] = cast(list[dict[str, float]], validation_results.get("categories", []))
-        clone_pct: float = sum(map(lambda clone: clone.get("clone_percentage", 0), clones))
-
-        # Note this is a really shitty optimalisation func, so please implement this for the actual algo's
-        score = -(weights[0] * ghost_rate + weights[1] * clone_pct / len(clones) + weights[3] * runtime / 3) 
-        return score * self._objective_factor
-
-    def intra_event_objective(self, weights: list[float]) -> float:
-        calculator = EventMetricsCalculator(self.get_run_data())
-        score = -calculator.get_metric(metric="clone_percentage", stat="std")
-
-        del calculator 
-        return score * self._objective_factor + self.event_objective(weights) 
+    def objective_func(self, weights: Sequence[float], nested: bool = True) -> int|float:
+        run_data = self.get_run_data()
+        time_rate = cast(float, run_data.get("inference_time", nan))
+        ghost_rate = cast(float, run_data.get("overall_ghost_rate", nan))
+        num_tracks = cast(float, run_data.get("total_tracks", nan))
+        calculator = EventMetricsCalculator(run_data)
+        clone_rate = calculator.get_metric(metric="clone_percentage", stat="mean")
+        terms = (time_rate, clone_rate, ghost_rate, num_tracks)
+        return sum(w * t for w, t in zip(weights, terms, strict=True))
     
     def _evaluate_run(self, weight: list[float], nested: bool = False) -> None:
         score = self.objective_func(weight, nested)

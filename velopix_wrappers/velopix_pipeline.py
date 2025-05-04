@@ -12,7 +12,7 @@ from tqdm import tqdm
 import warnings
 
 class PipelineBase(ABC):
-    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMapType]|None = None) -> None:
+    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMap]|None = None) -> None:
         self.name: ReconstructionAlgorithms
         self.json_events = events
         self.nested = intra_node
@@ -22,7 +22,7 @@ class PipelineBase(ABC):
             self.events.append(Event(event))
 
     @abstractmethod
-    def model(self, pMap: pMapType) -> ReconstructionAlgorithmsType: pass
+    def model(self, pmap: pMap) -> ReconstructionAlgorithmsType: pass
 
     def run(self, overwrite: bool) -> None:
         # here I should include a warning if self.results != empty break to prevent loss of data
@@ -31,24 +31,24 @@ class PipelineBase(ABC):
             return
         else:
             self.results: list[ValidationResults] = []
-        for pMap in cast(list[pMapType], self.parameters):
-            model: ReconstructionAlgorithmsType = self.model(pMap)
+        for pmap in cast(list[pMap], self.parameters):
+            model: ReconstructionAlgorithmsType = self.model(pmap)
             tstart = time.time()
-            self.tracks: list[Track] = model.solve_parallel(self.events) # type: ignore
+            self.tracks: list[Track] = model.solve_parallel(self.events)
             runtime = time.time() - tstart 
             if self.nested:
-                valMap = validate_to_json_nested(self.json_events, self.tracks, verbose=False)
+                valMap = validate_to_json_nested(self.json_events, self.tracks, verbose=False) # type: ignore
             else:
-                valMap = validate_to_json(self.json_events, self.tracks, verbose=False)
+                valMap = validate_to_json(self.json_events, self.tracks, verbose=False) # type: ignore
             valMap["inference_time"] = runtime
             valMap["parameters"] = {
-                "max_slope": (pMap.get("x_slope"), pMap.get("y_slope")), # type: ignore
-                "max_tol": (pMap.get("x_slope"), pMap.get("y_slope")), # type: ignore
-                "scatter": pMap.get("scatter") # type: ignore
+                "max_slope": (pmap.get("x_slope"), pmap.get("y_slope")), 
+                "max_tol": (pmap.get("x_slope"), pmap.get("y_slope")), 
+                "scatter": pmap.get("scatter") 
             }
             self.results.append(valMap)
 
-    def optimise_parameters(self, Optimiser: optimiserBase, max_runs: int = 100) -> pMapType:
+    def optimise_parameters(self, Optimiser: optimiserBase, max_runs: int = 100) -> pMap:
         """ 
         Ensure the `Optimiser` is build in accordance to the OptimiserBase class 
         """ 
@@ -70,7 +70,7 @@ class PipelineBase(ABC):
             print("Finsihed condition met, exiting...")
         return Optimiser.get_optimised_pMap()
 
-    def set_pMap(self, pMap: list[pMapType]) -> None: self.parameters = pMap
+    def set_pMap(self, pmap: list[pMap]) -> None: self.parameters = pmap
 
     def get_results(self) -> list[dict[str, Any]]: return self.results
     
@@ -99,12 +99,12 @@ class PipelineBase(ABC):
         print(f"Estimated database size: {size:.2f} {unit}")
 
     # note this print func is computationally heavy
-    def print_validation(self, parameters: pMapType|None = None, verbose: bool = True) -> None: 
+    def print_validation(self, parameters: pMap|None = None, verbose: bool = True) -> None: 
         if not hasattr(self, "tracks"):
             if parameters == None:
                 raise(AssertionError)
-            self.tracks: list[Track] = self.model(parameters).solve_parallel(self.events) # type: ignore
-        validate_print(self.json_events, self.tracks, verbose)
+            self.tracks: list[Track] = self.model(parameters).solve_parallel(self.events) 
+        validate_print(self.json_events, self.tracks, verbose) # type: ignore
 
     # def generate_database(self, output_directory: str, overwrite: bool) -> None:
     #     func = "output_distributions" if self.nested else "output_aggregates"
@@ -122,42 +122,42 @@ class PipelineBase(ABC):
     #         return func(self.results)
         
 class TrackFollowingPipeline(PipelineBase):
-    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMapType]|None=None):
+    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMap]|None=None):
         super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.TRACK_FOLLOWING
 
-    def model(self, pMap: pMapType) -> TrackFollowing:
+    def model(self, pmap: pMap) -> TrackFollowing:
         return TrackFollowing(
-            max_slopes=(pMap.get("x_slope"), pMap.get("y_slope")), # type: ignore
-            max_tolerance=(pMap.get("x_tol"), pMap.get("y_tol")), # type: ignore
-            max_scatter=pMap.get("scatter") # type: ignore
+            max_slopes=(pmap.get("x_slope"), pmap.get("y_slope")), # type: ignore
+            max_tolerance=(pmap.get("x_tol"), pmap.get("y_tol")), # type: ignore
+            max_scatter=pmap.get("scatter") # type: ignore
         )
     
 class GraphDFSPipeline(PipelineBase):
-    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMapType]|None=None):
+    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMap]|None=None):
         super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.GRAPH_DFS
         
-    def model(self, pMap: pMapType) -> GraphDFS:
+    def model(self, pmap: pMap) -> GraphDFS:
         return GraphDFS(
-            max_slopes=(pMap.get("x_slope"), pMap.get("y_slope")), # type: ignore
-            max_tolerance=(pMap.get("x_tol"), pMap.get("y_tol")), # type: ignore
-            max_scatter=pMap.get("scatter"), # type: ignore
-            minimum_root_weight=pMap.get("minimum_root_weight"), # type: ignore
-            weight_assignment_iterations=pMap.get("weight_assignment_iterations"), # type: ignore
-            allowed_skip_modules=pMap.get("allowed_skip_modules"), # type: ignore
-            allow_cross_track=pMap.get("allow_cross_track"), # type: ignore
-            clone_ghost_killing=pMap.get("clone_ghost_killing") # type: ignore
+            max_slopes=(pmap.get("x_slope"), pmap.get("y_slope")), # type: ignore
+            max_tolerance=(pmap.get("x_tol"), pmap.get("y_tol")), # type: ignore
+            max_scatter=pmap.get("scatter"), # type: ignore
+            minimum_root_weight=pmap.get("minimum_root_weight"), # type: ignore
+            weight_assignment_iterations=pmap.get("weight_assignment_iterations"), # type: ignore
+            allowed_skip_modules=pmap.get("allowed_skip_modules"), # type: ignore
+            allow_cross_track=pmap.get("allow_cross_track"), # type: ignore
+            clone_ghost_killing=pmap.get("clone_ghost_killing") # type: ignore
         )
     
 class SearchByTripletTriePipeline(PipelineBase):
-    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMapType]|None=None):
+    def __init__(self, events: EventType, intra_node: bool, parameter_map: list[pMap]|None=None):
         super().__init__(events, intra_node, parameter_map)
         self.name = ReconstructionAlgorithms.SEARCH_BY_TRIPLET_TRIE
 
-    def model(self, pMap: pMapType) -> SearchByTripletTrie:
+    def model(self, pmap: pMap) -> SearchByTripletTrie:
         return SearchByTripletTrie(
-            max_scatter=pMap.get("scatter"), # type: ignore
-            min_strong_track_length=pMap.get("min_strong_track_length"), # type: ignore
-            allowed_missed_modules=pMap.get("allowed_missed_modules") # type: ignore
+            max_scatter=pmap.get("scatter"), # type: ignore
+            min_strong_track_length=pmap.get("min_strong_track_length"), # type: ignore
+            allowed_missed_modules=pmap.get("allowed_missed_modules") # type: ignore
         )
