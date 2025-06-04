@@ -1,0 +1,34 @@
+# ================================
+# VeloPix_Full_Job.sub
+# ================================
+
+# the script HTCondor will run to init the py env and start the .py file
+executable = job.sh
+log = job.log
+output = job.out
+error  = job.err
+
+# use Nikhef's Alma Linux 9 Singularity image (No clue why was in the documenation)
++UseOS = "el9"
+
+# express <10min
+# short <4h
+# medium <24h
+# long <96h
++JobCategory = "medium"
+
+# resource requests
+request_cpus = 8
+request_memory = 32G
+
+# enable HTCondor’s built-in file transfer mechanism -> so we can export generated files
+should_transfer_files = YES
+
+# transfer all newly created/modified files back on normal exit or if evicted/held
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+# we have to list exactly the inputs HTCondor should stage to the remote node:
+transfer_input_files    = job.sh,velopix.tar.gz
+
+# submit the job
+queue

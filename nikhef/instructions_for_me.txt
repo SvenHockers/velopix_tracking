@@ -1,0 +1,18 @@
+OK OK This is the happy flow 
+
+1)  mv this entire dir to Nikhef
+2)  mv .sh and .sub file out of the dir into the parent dir (set it aside)
+3)  compress this dir into `velopix.tar.gz` use following cmd:
+        tar czf velopix.tar.gz nikhef/ 
+
+4) verify content of the compressed file:
+        tar tzf velopix.tar.gz
+
+5) make .sh executable:
+        chmod +x VeloPix_stoomboot_envHandler.sh
+
+5) upload .sub job to cluster:
+        condor_submit VeloPix_Full_Job.sub
+
+
+Maybe good idea to verify this with xenofone :))

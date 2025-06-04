@@ -1,0 +1,15 @@
+{
+    "solverName": "Baysian", // the EXACT class name of the solver
+    "reconstruction_algo": "TF",   // valid values: "TF", "GDFS", "ST"
+    "num_events": 10,               // MIN = 1, MAX = 1000
+    "intra_node": true,             // Wether we want intra-node analytics 
+    "max_runs": 100,                //Prevent infinite loops
+
+    // Set hyper params for the solver like this
+    "optimizer": { 
+        "learning_rate": 0.5, // dataType = float
+        "max_iterations": 100, // dataType = int
+        "target_score": 0.3, // dataType = float
+        "objective": "min" // dataType = Literal["min", "max"] 
+    }
+}
