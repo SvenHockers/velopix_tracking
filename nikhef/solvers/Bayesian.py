@@ -18,13 +18,17 @@ class Bayesian(BaseOptimizer):
         learning_rate: float,
         max_iterations: int = 100,
         target_score: float = 0.3,
-        objective: Literal["min", "max"] = "min"
+        objective: Literal["min", "max"] = "min",
+        nested: bool = True,
+        weights: list[float] = [1.0, 1.0, 1.0, -10.0]
     ): 
         super().__init__(objective=objective)
         self.learning_rate = learning_rate
         self.max_iterations = max_iterations
         self.target_score = target_score
         self.current_iteration = 0
+        self.nested = nested
+        self.weights = weights
 
         # Storage for GP model
         self.X: List[List[Any]] = []
@@ -60,7 +64,7 @@ class Bayesian(BaseOptimizer):
         Evaluates the current configuration and returns a new one.
         """
         # Evaluate the current configuration (from previous init/next call)
-        score = self.objective_func([1.0, 1.0, 1.0, -10.0])
+        score = self.objective_func(self.weights, self.nested)
         
         # Record evaluation
         if self._current_config:
