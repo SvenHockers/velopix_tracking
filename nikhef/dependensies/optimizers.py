@@ -85,9 +85,12 @@ class BaseOptimizer(ABC):
         time_rate = cast(float, run_data.get("inference_time", nan))
         ghost_rate = cast(float, run_data.get("overall_ghost_rate", nan))
         num_tracks = cast(float, run_data.get("total_tracks", nan))
-        calculator = EventMetricsCalculator(run_data)
-        clone_rate = calculator.get_metric(metric="clone_percentage", stat="mean")
-        terms = (time_rate, clone_rate, ghost_rate, num_tracks)
+        if nested:
+            calculator = EventMetricsCalculator(run_data)
+            clone_rate = calculator.get_metric(metric="clone_percentage", stat="mean")
+            terms = (time_rate, clone_rate, ghost_rate, num_tracks)
+            return sum(w * t for w, t in zip(weights, terms, strict=True))
+        terms = (time_rate, ghost_rate, num_tracks)
         return sum(w * t for w, t in zip(weights, terms, strict=True))
     
     def _evaluate_run(self, weight: list[float], nested: bool = False) -> None:
