@@ -84,7 +84,6 @@ class BaseOptimizer(ABC):
         run_data = self.get_run_data()
         time_rate = cast(float, run_data.get("inference_time", nan))
         ghost_rate = cast(float, run_data.get("overall_ghost_rate", nan))
-        print(f"clone_rate base: {clone_rate}")
         num_tracks = cast(float, run_data.get("total_tracks", nan))
         if nested:
             calculator = EventMetricsCalculator(run_data)
