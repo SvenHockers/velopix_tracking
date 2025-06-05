@@ -15,7 +15,7 @@ error  = job.err
 # short <4h
 # medium <24h
 # long <96h
-+JobCategory = "medium"
++JobCategory = "express"
 
 # resource requests
 request_cpus = 8

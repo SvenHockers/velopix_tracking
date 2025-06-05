@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
 from typing import cast
+from uuid import UUID, uuid4
 
 from .algorithm_schema import ReconstructionAlgorithms
 from .event_metrics import EventMetricsCalculator
@@ -21,7 +22,7 @@ class BaseOptimizer(ABC):
             self.nested = cast(bool, auto_eval.get("nested"))
             self.weights = cast(list[float], auto_eval.get("weights"))
             self.score_history: list[float] = []
-            self.history: dict[str, float] = {}
+            self.history: dict[str, Any] = {}
             self.prev_config: pMap = {}
     
     @staticmethod
@@ -97,7 +98,11 @@ class BaseOptimizer(ABC):
         score = self.objective_func(weight, nested)
         if score == None: print("Score is null") # type: ignore
         self.score_history.append(score)
-        self.history[str(self.prev_config.items())] = deepcopy(score) # I changed tuple(self.prev_config.items()) -> str(self.prev_config.items()) not sure if this works
+        self.history[str(uuid4())] = {
+            "params": deepcopy(self.prev_config),
+            "score": deepcopy(score),
+            "meta": deepcopy(self.get_run_data())
+        }
         compare = score < self.best_score if self.objective == "min" else score > self.best_score
         if compare:
             self.best_score = score

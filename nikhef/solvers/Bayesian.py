@@ -3,7 +3,7 @@ import random
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
-from ..dependensies.optimizers import BaseOptimizer, pMap 
+from .optimizers import BaseOptimizer, pMap 
 
 """  
 ChangeLog:
@@ -22,7 +22,7 @@ class Bayesian(BaseOptimizer):
         nested: bool = True,
         weights: list[float] = [1.0, 1.0, 1.0, -10.0]
     ): 
-        super().__init__(objective=objective)
+        super().__init__(objective=objective, auto_eval={"autoEval": True, "nested": nested, "weights": weights})
         self.learning_rate = learning_rate
         self.max_iterations = max_iterations
         self.target_score = target_score

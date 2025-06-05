@@ -1,5 +1,5 @@
 # pyright: strict
-from ..dependensies.optimizers import BaseOptimizer, pMap
+from .optimizers import BaseOptimizer, pMap
 from collections.abc import Generator
 from itertools import product
 from typing import Any, TypeAlias, cast, Literal
@@ -20,10 +20,16 @@ class GridSearch(BaseOptimizer):
     _best_config: pMap
     _best_score: float
 
-    def __init__(self, resolution: int = 10, objective: Literal["min", "max"] = "min", options: dict[str, Any] | None = None):
-        super().__init__(objective=objective)
+    def __init__(
+            self, 
+            resolution: int = 10, 
+            objective: Literal["min", "max"] = "min", 
+            nested: bool =  True,
+            weights: list[float] = [1.0, 1.0, 1.0, -10.0]
+            ):
+        super().__init__(objective=objective, auto_eval={"autoEval": True, "nested": nested, "weights": weights})
         self._resolution = resolution
-        self._options = options if options is not None else {"w": [1., 1., 1.], "nested": False}
+        self._options = {"w": weights, "nested": nested}
 
     def init(self) -> pMap:
         """

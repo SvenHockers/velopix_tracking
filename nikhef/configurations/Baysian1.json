@@ -1,0 +1,16 @@
+d{
+    "solverName": "Bayesian", 
+    "reconstruction_algo": "TF", 
+    "num_events": 100, 
+    "intra_node": true, 
+    "max_runs": 10,
+
+    "optimizer": { 
+        "learning_rate": 0.01, 
+        "max_iterations": 10, 
+        "target_score": 0.3, 
+        "objective": "min",
+        "nested": true,
+        "weights": [1.0, 1.0, 1.0, -10.0]
+    }
+}

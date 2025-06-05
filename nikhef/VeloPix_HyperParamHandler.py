@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Any
 
-from dependensies.velopix_pipeline import TrackFollowingPipeline, GraphDFSPipeline, SearchByTripletTriePipeline, PipelineBase
+from solvers.velopix_pipeline import TrackFollowingPipeline, GraphDFSPipeline, SearchByTripletTriePipeline, PipelineBase
 import solvers
 
 """     
@@ -80,8 +80,8 @@ def main(config: dict[str, Any]):
     )
     logger.info("Optimal parameters found: %s", optimal_parameters)
 
-    # Integrate Dennis data solution in here
-    # Ensure to write the file to results.csv as this will be picked up by the .sh script
+    with open("result.json", "w") as f:
+        json.dump(optimiser.history, f)
 
 if __name__ == "__main__":
     for filename in os.listdir("configurations"):

@@ -1,0 +1,14 @@
+{
+    "solverName": "GridSearch", 
+    "reconstruction_algo": "TF", 
+    "num_events": 100, 
+    "intra_node": true, 
+    "max_runs": 100,
+
+    "optimizer": { 
+        "resolution": 3, 
+        "objective": "min", 
+        "nested": true,
+        "weights": [1.0, 1.0, 1.0, -10.0]
+    }
+}
