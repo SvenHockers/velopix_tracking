@@ -1,7 +1,7 @@
 from typing import Any, Dict, Literal, List
 import random
 import numpy as np
-from velopix_wrappers.optimizers import BaseOptimizer, pMap
+from optimizers import BaseOptimizer, pMap
 
 class ParticleSwarm(BaseOptimizer):
     def __init__(
