@@ -49,13 +49,15 @@ class BaseOptimizer(ABC):
         """
         pmap = self.next()
         if self.validate_config(pmap, self._algorithm.value):
+            self.prev_config = pmap
             return pmap
         raise ValueError("Parameter map validation failed.")
     
     def add_run(self, results: ValidationResults) -> None: 
-        if self.auto_evaluate:
-            self._evaluate_run(weight=self.weights, nested=self.nested)
         self.run = results
+        if self.auto_evaluate:
+            self._evaluate_run(validationResult=results, weight=self.weights, nested=self.nested)
+        
 
     def get_optimised_pMap(self) -> pMap: return self.best_config
 
@@ -86,23 +88,27 @@ class BaseOptimizer(ABC):
         time_rate = cast(float, run_data.get("inference_time", nan))
         ghost_rate = cast(float, run_data.get("overall_ghost_rate", nan))
         num_tracks = cast(float, run_data.get("total_tracks", nan))
+        penalty = 0
+        if num_tracks == 0:
+            penalty = 999_999 if self.objective == "min" else -999_999
         if nested:
             calculator = EventMetricsCalculator(run_data)
             clone_rate = calculator.get_metric(metric="clone_percentage", stat="mean")
             terms = (time_rate, clone_rate, ghost_rate, num_tracks)
-            return sum(w * t for w, t in zip(weights, terms, strict=True))
+            return sum(w * t for w, t in zip(weights, terms, strict=True)) + penalty
         terms = (time_rate, ghost_rate, num_tracks)
-        return sum(w * t for w, t in zip(weights, terms, strict=True))
+        return sum(w * t for w, t in zip(weights, terms, strict=True)) + penalty
     
-    def _evaluate_run(self, weight: list[float], nested: bool = False) -> None:
+    def _evaluate_run(self, validationResult: ValidationResults | ValidationResultsNested, weight: list[float], nested: bool = False) -> None:
         score = self.objective_func(weight, nested)
-        if score == None: print("Score is null") # type: ignore
-        self.score_history.append(score)
         self.history[str(uuid4())] = {
             "params": deepcopy(self.prev_config),
             "score": deepcopy(score),
-            "meta": deepcopy(self.get_run_data())
+            "meta": deepcopy(validationResult)
         }
+        if score is None: # type:ignore
+            return
+        self.score_history.append(score)
         compare = score < self.best_score if self.objective == "min" else score > self.best_score
         if compare:
             self.best_score = score
