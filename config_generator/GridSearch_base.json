@@ -1,0 +1,12 @@
+{
+    "solverName": "GridSearch",
+    "num_events": 1000, 
+    "intra_node": true, 
+    "max_runs": 10000,
+
+    "optimizer": { 
+        "resolution": 10, 
+        "objective": "min", 
+        "nested": true
+    }
+}
