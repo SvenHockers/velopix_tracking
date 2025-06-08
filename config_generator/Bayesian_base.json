@@ -1,0 +1,12 @@
+{
+    "solverName": "Bayesian", 
+    "num_events": 1000, 
+    "intra_node": true, 
+    "max_runs": 21,
+
+    "optimizer": { 
+        "max_iterations": 21,
+        "objective": "min",
+        "nested": true
+    }
+}

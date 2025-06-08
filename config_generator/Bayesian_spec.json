@@ -1,0 +1,10 @@
+{
+    "learning_rate": {
+        "type": "cat",
+        "values": [0.001, 0.01, 0.1]
+    },
+    "target_score": {
+        "type": "cat",
+        "values": [0.01, 0.1, 0.3]
+    }
+}

@@ -1,6 +1,6 @@
 {
     "resolution": {
         "type": "cat",
-        "values": [3, 5, 7, 10]
+        "values": [7, 10]
     }
 }

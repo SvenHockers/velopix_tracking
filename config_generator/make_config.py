@@ -3,6 +3,7 @@ import argparse
 import json
 import itertools
 from typing import Any
+from uuid import uuid4
 
 def generate_numeric_range(min_val: float, max_val: float, steps: int) -> list[float]:
     """Generate evenly spaced values between min and max (inclusive)."""
@@ -120,7 +121,7 @@ def main():
                 config["optimizer"][param_name] = param_value
             
             # Create output file name
-            output_file = f"{args.solver}_{args.algo}_{file_counter}.json"
+            output_file = f"output/{args.solver}_{args.algo}_{file_counter}_{uuid4()}.json"
             
             # Save configuration to file
             with open(output_file, 'w') as f:

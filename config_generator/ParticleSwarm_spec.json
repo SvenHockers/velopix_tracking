@@ -1,0 +1,6 @@
+{
+    "swarm_size": {
+        "type": "cat",
+        "values": [3, 10, 20, 100]
+    }
+}
