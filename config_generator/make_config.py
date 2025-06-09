@@ -107,7 +107,7 @@ def main():
             
             # Set required fields
             config["solverName"] = args.solver
-            config["algo"] = args.algo
+            config["reconstruction_algo"] = args.algo
             
             # Ensure optimizer exists 
             if "optimizer" not in config:
