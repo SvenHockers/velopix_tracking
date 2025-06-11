@@ -29,7 +29,7 @@ class GridSearch(BaseOptimizer):
             ):
         super().__init__(objective=objective, auto_eval={"autoEval": True, "nested": nested, "weights": weights})
         self._resolution = resolution
-        self._options = {"w": weights, "nested": nested}
+        self._options = {"weights": weights, "nested": nested}
 
     def init(self) -> pMap:
         """
@@ -75,7 +75,7 @@ class GridSearch(BaseOptimizer):
         """
         Generates the next parameter map by slightly modifying existing values.
         """
-        last_score = self.objective_func([1., 1., 1., -10.])
+        last_score = self.objective_func(**self._options)
 
         if self.objective == "min":
             if last_score < self.best_score:
