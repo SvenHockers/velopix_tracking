@@ -1,0 +1,16 @@
+{
+    "solverName": "PolyHoot",
+    "reconstruction_algo": "ST",
+    "num_events": 100,
+    "intra_node": true,
+    "max_runs": 1000,
+    "optimizer": {
+      "max_iterations": 1000,
+      "objective": "min",
+      "alfa": 5.0,
+      "epsilon": 20.0,
+      "eta": 0.50,
+      "nested": true,
+      "weights": [0.4, 0.2, 0.5, -7.0]
+    }
+  }
