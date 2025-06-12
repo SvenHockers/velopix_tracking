@@ -91,11 +91,24 @@ class BaseOptimizer(ABC):
         penalty = 0
         if num_tracks == 0:
             penalty = 999_999 if self.objective == "min" else -999_999
+
+        print("=== Objective Function Debug Info ===")
+        # print(f"run_data: {run_data}")
+        print(f"time_rate: {time_rate}")
+        print(f"ghost_rate: {ghost_rate}")
+        print(f"num_tracks: {num_tracks}")
+        print(f"penalty: {penalty}")
+        print(f"weights: {weights}")
+        print(f"nested: {nested}")
         if nested:
             calculator = EventMetricsCalculator(run_data)
             clone_rate = calculator.get_metric(metric="clone_percentage", stat="mean")
             terms = (time_rate, clone_rate, ghost_rate, num_tracks)
-            return sum(w * t for w, t in zip(weights, terms, strict=True)) + penalty
+            score = sum(w * t for w, t in zip(weights, terms, strict=True)) + penalty
+            print(f"clone_rate: {clone_rate}")
+            print(f"terms (used in weighted sum): {terms}")
+            print(f"score (with penalty): {score}")
+            return score
         terms = (time_rate, ghost_rate, num_tracks)
         return sum(w * t for w, t in zip(weights, terms, strict=True)) + penalty
     
