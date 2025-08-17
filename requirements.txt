@@ -7,3 +7,4 @@ ipykernel == 6.29.5
 scipy == 1.15.2
 scikit-learn == 1.6.1
 tqdm == 4.67.1
+velopix == 0.8.9
