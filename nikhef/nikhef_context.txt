@@ -1,0 +1,4 @@
+For context, this directory was an experimental directory. 
+
+Nikhef is a computer cluster in the Netherlands which we had access to during this project. 
+This directory was therefor for setting up and running the experiements.
