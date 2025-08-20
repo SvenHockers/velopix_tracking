@@ -1,5 +1,10 @@
 # Track Reconstruction Framework  
 
+> [!NOTE]  
+> This repository is research done on CERNs VeloPix Module, using real CERN data and algorithms.
+> The backend has been moved to a separate repository: [velopix](https://github.com/SvenHockers/velopix).
+> Please refer to that repository for all backend-related information (Algorithms, VeloPix model, Validators, etc.).
+
 This repository provides a **high-performance track reconstruction framework** for processing real data from the **LHCb detector at CERN**. Charged particles moving at relativistic speeds leave **measurable hits** as they traverse detector modules. The objective is to **efficiently reconstruct particle trajectories with high accuracy**.
 
 Execute the reconstruction pipeline with:
